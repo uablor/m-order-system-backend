@@ -5,42 +5,38 @@ import type { ICustomerRepository } from '../../../domain/repositories/customer.
 import type { CustomerEntity } from '../../../domain/entities/customer.entity';
 import { CustomerOrmEntity } from '../entities/customer.orm-entity';
 import { customerOrmToDomain, customerDomainToOrm } from '../mappers/customer.mapper';
-import { getTransactionManager } from '../../../../../shared/infrastructure/persistence';
 
 @Injectable()
 export class CustomerRepositoryImpl implements ICustomerRepository {
   constructor(
     @InjectRepository(CustomerOrmEntity)
-    private readonly repo: Repository<CustomerOrmEntity>,
+    private readonly customerRepo: Repository<CustomerOrmEntity>,
   ) {}
 
-  private getRepo(): Repository<CustomerOrmEntity> {
-    const em = getTransactionManager();
-    return em ? em.getRepository(CustomerOrmEntity) : this.repo;
-  }
-
   async save(customer: CustomerEntity): Promise<CustomerEntity> {
-    const repo = this.getRepo();
-    const orm = repo.create(customerDomainToOrm(customer) as Partial<CustomerOrmEntity>);
-    const saved = await repo.save(orm);
+    const orm = this.customerRepo.create(
+      customerDomainToOrm(customer) as Partial<CustomerOrmEntity>,
+    );
+    orm.technical_id = customer.id;
+    const saved = await this.customerRepo.save(orm);
     return customerOrmToDomain(saved);
   }
 
   async findById(id: string): Promise<CustomerEntity | null> {
-    const repo = this.getRepo();
-    const orm = await repo.findOne({ where: { domain_id: id } });
+    const orm = await this.customerRepo.findOne({ where: { domain_id: id } });
     if (!orm) return null;
     return customerOrmToDomain(orm);
   }
 
   async findByMerchant(merchantId: string): Promise<CustomerEntity[]> {
-    const repo = this.getRepo();
-    const rows = await repo.find({ where: { merchant_id: merchantId } });
-    return rows.map(customerOrmToDomain);
+    const rows = await this.customerRepo.find({
+      where: { technical_merchant_id: merchantId },
+      order: { created_at: 'DESC' },
+    });
+    return rows.map((r) => customerOrmToDomain(r));
   }
 
   async delete(id: string): Promise<void> {
-    const repo = this.getRepo();
-    await repo.delete({ domain_id: id });
+    await this.customerRepo.delete({ domain_id: id });
   }
 }

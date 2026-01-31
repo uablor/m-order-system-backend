@@ -4,55 +4,49 @@ import { Repository } from 'typeorm';
 import type { IUserRepository } from '../../../domain/repositories/user.repository';
 import type { UserEntity } from '../../../domain/entities/user.entity';
 import { UserOrmEntity } from '../entities/user.orm-entity';
-import { userOrmToDomainWithRole, userDomainToOrm } from '../mappers/user.mapper';
-import { getTransactionManager } from '../../../../../shared/infrastructure/persistence';
+import { userOrmToDomain, userDomainToOrm } from '../mappers/user.mapper';
 
 @Injectable()
 export class UserRepositoryImpl implements IUserRepository {
   constructor(
     @InjectRepository(UserOrmEntity)
-    private readonly repo: Repository<UserOrmEntity>,
+    private readonly userRepo: Repository<UserOrmEntity>,
   ) {}
 
-  private getRepo(): Repository<UserOrmEntity> {
-    const em = getTransactionManager();
-    return em ? em.getRepository(UserOrmEntity) : this.repo;
-  }
-
   async save(user: UserEntity): Promise<UserEntity> {
-    const repo = this.getRepo();
-    const orm = repo.create(userDomainToOrm(user) as object);
-    const saved = await repo.save(orm);
-    return userOrmToDomainWithRole(saved);
+    const orm = this.userRepo.create(userDomainToOrm(user) as Partial<UserOrmEntity>);
+    orm.technical_id = user.id;
+    const saved = await this.userRepo.save(orm);
+    return userOrmToDomain(saved);
   }
 
   async findById(id: string): Promise<UserEntity | null> {
-    const repo = this.getRepo();
-    const orm = await repo.findOne({
+    const orm = await this.userRepo.findOne({
       where: { domain_id: id },
       relations: ['role'],
     });
     if (!orm) return null;
-    return userOrmToDomainWithRole(orm);
+    return userOrmToDomain(orm);
   }
 
   async findByEmail(email: string): Promise<UserEntity | null> {
-    const repo = this.getRepo();
-    const orm = await repo.findOne({
-      where: { email: email.trim().toLowerCase() },
+    const orm = await this.userRepo.findOne({
+      where: { email },
       relations: ['role'],
     });
     if (!orm) return null;
-    return userOrmToDomainWithRole(orm);
+    return userOrmToDomain(orm);
   }
 
-  async findByEmailAndMerchant(email: string, merchantId: string): Promise<UserEntity | null> {
-    const repo = this.getRepo();
-    const orm = await repo.findOne({
-      where: { email: email.trim().toLowerCase(), merchant_id: merchantId },
+  async findByEmailAndMerchant(
+    email: string,
+    merchantId: string,
+  ): Promise<UserEntity | null> {
+    const orm = await this.userRepo.findOne({
+      where: { email, technical_merchant_id: merchantId },
       relations: ['role'],
     });
     if (!orm) return null;
-    return userOrmToDomainWithRole(orm);
+    return userOrmToDomain(orm);
   }
 }

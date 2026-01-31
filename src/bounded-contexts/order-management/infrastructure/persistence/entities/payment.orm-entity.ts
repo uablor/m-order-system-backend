@@ -8,16 +8,19 @@ import {
 @Entity('payments', { engine: 'InnoDB' })
 export class PaymentOrmEntity {
   @PrimaryColumn('char', { length: 36 })
-  payment_id!: string;
+  technical_id!: string;
+
+  @Column({ type: 'char', length: 36, unique: true })
+  domain_id!: string;
 
   @Column({ type: 'char', length: 36 })
-  order_id!: string;
+  technical_order_id!: string;
 
   @Column({ type: 'char', length: 36 })
-  merchant_id!: string;
+  technical_merchant_id!: string;
 
   @Column({ type: 'char', length: 36 })
-  customer_id!: string;
+  technical_customer_id!: string;
 
   @Column({ type: 'decimal', precision: 18, scale: 2, default: 0 })
   payment_amount!: number;
@@ -41,13 +44,13 @@ export class PaymentOrmEntity {
   status!: string;
 
   @Column({ type: 'char', length: 36, nullable: true })
-  verified_by!: string | null;
+  technical_user_id_verified!: string | null;
 
   @Column({ type: 'timestamp', nullable: true })
   verified_at!: Date | null;
 
   @Column({ type: 'char', length: 36, nullable: true })
-  rejected_by!: string | null;
+  technical_user_id_rejected!: string | null;
 
   @Column({ type: 'timestamp', nullable: true })
   rejected_at!: Date | null;

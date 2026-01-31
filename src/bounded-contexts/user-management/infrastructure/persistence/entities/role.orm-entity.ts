@@ -4,7 +4,10 @@ import { PermissionOrmEntity } from './permission.orm-entity';
 @Entity('roles', { engine: 'InnoDB' })
 export class RoleOrmEntity {
   @PrimaryColumn('char', { length: 36 })
-  role_id!: string;
+  technical_id!: string;
+
+  @Column({ type: 'char', length: 36, unique: true })
+  domain_id!: string;
 
   @Column({ type: 'varchar', length: 50, unique: true })
   role_name!: string;
@@ -15,8 +18,8 @@ export class RoleOrmEntity {
   @ManyToMany(() => PermissionOrmEntity)
   @JoinTable({
     name: 'role_permissions',
-    joinColumn: { name: 'role_id', referencedColumnName: 'role_id' },
-    inverseJoinColumn: { name: 'permission_id', referencedColumnName: 'permission_id' },
+    joinColumn: { name: 'technical_role_id', referencedColumnName: 'technical_id' },
+    inverseJoinColumn: { name: 'technical_permission_id', referencedColumnName: 'technical_id' },
   })
   permissions!: PermissionOrmEntity[];
 }

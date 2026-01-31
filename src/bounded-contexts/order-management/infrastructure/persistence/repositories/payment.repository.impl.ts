@@ -11,17 +11,21 @@ import { getTransactionManager } from '../../../../../shared/infrastructure/pers
 export class PaymentRepositoryImpl implements IPaymentRepository {
   constructor(
     @InjectRepository(PaymentOrmEntity)
-    private readonly repo: Repository<PaymentOrmEntity>,
+    private readonly paymentRepo: Repository<PaymentOrmEntity>,
   ) {}
 
   private getRepo(): Repository<PaymentOrmEntity> {
     const em = getTransactionManager();
-    return em ? em.getRepository(PaymentOrmEntity) : this.repo;
+    if (em) {
+      return em.getRepository(PaymentOrmEntity);
+    }
+    return this.paymentRepo;
   }
 
   async save(aggregate: PaymentAggregate): Promise<PaymentAggregate> {
     const repo = this.getRepo();
     const orm = repo.create(paymentDomainToOrm(aggregate) as Partial<PaymentOrmEntity>);
+    orm.technical_id = aggregate.id;
     const saved = await repo.save(orm);
     return paymentOrmToDomain(saved);
   }
@@ -35,7 +39,10 @@ export class PaymentRepositoryImpl implements IPaymentRepository {
 
   async findByOrderId(orderId: string): Promise<PaymentAggregate[]> {
     const repo = this.getRepo();
-    const rows = await repo.find({ where: { order_id: orderId } });
-    return rows.map(paymentOrmToDomain);
+    const rows = await repo.find({
+      where: { technical_order_id: orderId },
+      order: { created_at: 'DESC' },
+    });
+    return rows.map((r) => paymentOrmToDomain(r));
   }
 }

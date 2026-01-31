@@ -17,12 +17,15 @@ import { getTransactionManager } from '../../../../../shared/infrastructure/pers
 export class ExchangeRateRepositoryImpl implements IExchangeRateRepository {
   constructor(
     @InjectRepository(ExchangeRateOrmEntity)
-    private readonly repo: Repository<ExchangeRateOrmEntity>,
+    private readonly exchangeRateRepo: Repository<ExchangeRateOrmEntity>,
   ) {}
 
   private getRepo(): Repository<ExchangeRateOrmEntity> {
     const em = getTransactionManager();
-    return em ? em.getRepository(ExchangeRateOrmEntity) : this.repo;
+    if (em) {
+      return em.getRepository(ExchangeRateOrmEntity);
+    }
+    return this.exchangeRateRepo;
   }
 
   async save(aggregate: ExchangeRateAggregate): Promise<ExchangeRateAggregate> {
@@ -30,6 +33,7 @@ export class ExchangeRateRepositoryImpl implements IExchangeRateRepository {
     const orm = repo.create(
       exchangeRateDomainToOrm(aggregate) as Partial<ExchangeRateOrmEntity>,
     );
+    orm.technical_id = aggregate.id;
     const saved = await repo.save(orm);
     return exchangeRateOrmToDomain(saved);
   }
@@ -50,7 +54,7 @@ export class ExchangeRateRepositoryImpl implements IExchangeRateRepository {
     const repo = this.getRepo();
     const orm = await repo.findOne({
       where: {
-        merchant_id: merchantId,
+        technical_merchant_id: merchantId,
         rate_date: rateDate,
         rate_type: rateType,
         base_currency: baseCurrency,
@@ -66,9 +70,9 @@ export class ExchangeRateRepositoryImpl implements IExchangeRateRepository {
     const repo = this.getRepo();
     const page = Math.max(1, params.page ?? 1);
     const limit = Math.min(100, Math.max(1, params.limit ?? 20));
-    const qb = repo.createQueryBuilder('e').where('e.merchant_id = :merchantId', {
-      merchantId: params.merchantId,
-    });
+    const qb = repo
+      .createQueryBuilder('e')
+      .where('e.technical_merchant_id = :merchantId', { merchantId: params.merchantId });
     if (params.rateDate) {
       qb.andWhere('e.rate_date = :rateDate', { rateDate: params.rateDate });
     }
@@ -76,15 +80,10 @@ export class ExchangeRateRepositoryImpl implements IExchangeRateRepository {
       qb.andWhere('e.rate_type = :rateType', { rateType: params.rateType });
     }
     if (params.baseCurrency) {
-      qb.andWhere('e.base_currency = :baseCurrency', {
-        baseCurrency: params.baseCurrency,
-      });
+      qb.andWhere('e.base_currency = :baseCurrency', { baseCurrency: params.baseCurrency });
     }
     qb.orderBy('e.rate_date', 'DESC');
-    const [rows, total] = await qb
-      .skip((page - 1) * limit)
-      .take(limit)
-      .getManyAndCount();
-    return { data: rows.map(exchangeRateOrmToDomain), total };
+    const [rows, total] = await qb.skip((page - 1) * limit).take(limit).getManyAndCount();
+    return { data: rows.map((r) => exchangeRateOrmToDomain(r)), total };
   }
 }

@@ -24,6 +24,7 @@ import { PaginateMerchantsQuery } from '../../../application/queries/paginate-me
 import { JwtAuthGuard } from '../../../infrastructure/external-services/jwt-auth.guard';
 import { RolesGuard } from '../../../infrastructure/external-services/roles.guard';
 import { Roles } from '../../../application/decorators/roles.decorator';
+import type { DefaultCurrency } from '../../../domain/entities/merchant.entity';
 
 @ApiTags('Merchant')
 @Controller('merchants')
@@ -44,8 +45,8 @@ export class MerchantController {
       new CreateMerchantCommand(
         dto.ownerUserId,
         dto.shopName,
-        dto.defaultCurrency,
-        dto.isActive,
+        dto.defaultCurrency as DefaultCurrency,
+        dto.isActive ?? true,
         dto.shopLogoUrl,
         dto.shopAddress,
         dto.contactPhone,
@@ -63,7 +64,9 @@ export class MerchantController {
   @ApiParam({ name: 'id', format: 'uuid' })
   @ApiResponse({ status: 200, description: 'Merchant updated' })
   async update(@Param('id') id: string, @Body() dto: UpdateMerchantDto) {
-    const merchant = await this.commandBus.execute(new UpdateMerchantCommand(id, { ...dto }));
+    const merchant = await this.commandBus.execute(
+      new UpdateMerchantCommand(id, { ...dto, defaultCurrency: dto.defaultCurrency as DefaultCurrency | undefined }),
+    );
     return this.toResponse(merchant);
   }
 

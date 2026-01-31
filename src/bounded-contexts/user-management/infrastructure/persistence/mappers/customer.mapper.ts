@@ -5,11 +5,11 @@ import type { CustomerOrmEntity } from '../entities/customer.orm-entity';
 export function customerOrmToDomain(orm: CustomerOrmEntity): CustomerEntity {
   return CustomerEntityClass.create({
     id: orm.domain_id,
-    merchantId: orm.merchant_id,
-    name: orm.name,
-    phone: orm.phone ?? undefined,
-    email: orm.email ?? undefined,
-    address: orm.address ?? undefined,
+    merchantId: orm.technical_merchant_id,
+    name: orm.customer_name,
+    phone: orm.contact_phone ?? undefined,
+    email: undefined,
+    address: orm.shipping_address ?? undefined,
     createdAt: orm.created_at,
     updatedAt: orm.updated_at,
   });
@@ -17,12 +17,11 @@ export function customerOrmToDomain(orm: CustomerOrmEntity): CustomerEntity {
 
 export function customerDomainToOrm(entity: CustomerEntity): Partial<CustomerOrmEntity> {
   return {
+    technical_id: entity.id,
     domain_id: entity.id,
-    merchant_id: entity.merchantId,
-    name: entity.name,
-    phone: entity.phone ?? null,
-    email: entity.email ?? null,
-    address: entity.address ?? null,
-    updated_at: entity.updatedAt ?? new Date(),
+    technical_merchant_id: entity.merchantId,
+    customer_name: entity.name,
+    contact_phone: entity.phone ?? null,
+    shipping_address: entity.address ?? null,
   };
 }

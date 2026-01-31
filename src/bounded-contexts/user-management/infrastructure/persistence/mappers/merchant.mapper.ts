@@ -1,14 +1,11 @@
 import type { MerchantEntity } from '../../../domain/entities/merchant.entity';
-import {
-  DefaultCurrency,
-  MerchantEntity as MerchantEntityClass,
-} from '../../../domain/entities/merchant.entity';
+import { MerchantEntity as MerchantEntityClass } from '../../../domain/entities/merchant.entity';
 import type { MerchantOrmEntity } from '../entities/merchant.orm-entity';
 
 export function merchantOrmToDomain(orm: MerchantOrmEntity): MerchantEntity {
   return MerchantEntityClass.create({
     id: orm.domain_id,
-    ownerUserId: orm.owner_user_id,
+    ownerUserId: orm.technical_user_id,
     shopName: orm.shop_name,
     shopLogoUrl: orm.shop_logo_url ?? undefined,
     shopAddress: orm.shop_address ?? undefined,
@@ -17,7 +14,7 @@ export function merchantOrmToDomain(orm: MerchantOrmEntity): MerchantEntity {
     contactFacebook: orm.contact_facebook ?? undefined,
     contactLine: orm.contact_line ?? undefined,
     contactWhatsapp: orm.contact_whatsapp ?? undefined,
-    defaultCurrency: (orm.default_currency as DefaultCurrency) ?? DefaultCurrency.USD,
+    defaultCurrency: orm.default_currency as MerchantEntity['defaultCurrency'],
     isActive: orm.is_active,
     createdAt: orm.created_at,
     updatedAt: orm.updated_at,
@@ -26,8 +23,9 @@ export function merchantOrmToDomain(orm: MerchantOrmEntity): MerchantEntity {
 
 export function merchantDomainToOrm(entity: MerchantEntity): Partial<MerchantOrmEntity> {
   return {
+    technical_id: entity.id,
     domain_id: entity.id,
-    owner_user_id: entity.ownerUserId,
+    technical_user_id: entity.ownerUserId,
     shop_name: entity.shopName,
     shop_logo_url: entity.shopLogoUrl ?? null,
     shop_address: entity.shopAddress ?? null,
@@ -38,6 +36,5 @@ export function merchantDomainToOrm(entity: MerchantEntity): Partial<MerchantOrm
     contact_whatsapp: entity.contactWhatsapp ?? null,
     default_currency: entity.defaultCurrency,
     is_active: entity.isActive,
-    updated_at: entity.updatedAt ?? new Date(),
   };
 }

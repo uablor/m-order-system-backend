@@ -8,13 +8,16 @@ import {
 @Entity('notifications', { engine: 'InnoDB' })
 export class NotificationOrmEntity {
   @PrimaryColumn('char', { length: 36 })
-  notification_id!: string;
+  technical_id!: string;
+
+  @Column({ type: 'char', length: 36, unique: true })
+  domain_id!: string;
 
   @Column({ type: 'char', length: 36 })
-  merchant_id!: string;
+  technical_merchant_id!: string;
 
   @Column({ type: 'char', length: 36 })
-  customer_id!: string;
+  technical_customer_id!: string;
 
   @Column({ type: 'varchar', length: 50 })
   notification_type!: string;

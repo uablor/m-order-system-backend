@@ -14,17 +14,21 @@ import { getTransactionManager } from '../../../../../shared/infrastructure/pers
 export class OrderRepositoryImpl implements IOrderRepository {
   constructor(
     @InjectRepository(OrderOrmEntity)
-    private readonly repo: Repository<OrderOrmEntity>,
+    private readonly orderRepo: Repository<OrderOrmEntity>,
   ) {}
 
   private getRepo(): Repository<OrderOrmEntity> {
     const em = getTransactionManager();
-    return em ? em.getRepository(OrderOrmEntity) : this.repo;
+    if (em) {
+      return em.getRepository(OrderOrmEntity);
+    }
+    return this.orderRepo;
   }
 
   async save(order: OrderEntity): Promise<OrderEntity> {
     const repo = this.getRepo();
     const orm = repo.create(orderDomainToOrm(order) as Partial<OrderOrmEntity>);
+    orm.technical_id = order.id;
     const saved = await repo.save(orm);
     return orderOrmToDomain(saved);
   }
@@ -32,7 +36,7 @@ export class OrderRepositoryImpl implements IOrderRepository {
   async findById(id: string, merchantId: string): Promise<OrderEntity | null> {
     const repo = this.getRepo();
     const orm = await repo.findOne({
-      where: { domain_id: id, merchant_id: merchantId },
+      where: { domain_id: id, technical_merchant_id: merchantId },
     });
     if (!orm) return null;
     return orderOrmToDomain(orm);
@@ -41,7 +45,7 @@ export class OrderRepositoryImpl implements IOrderRepository {
   async findByOrderCode(orderCode: string, merchantId: string): Promise<OrderEntity | null> {
     const repo = this.getRepo();
     const orm = await repo.findOne({
-      where: { order_code: orderCode, merchant_id: merchantId },
+      where: { order_code: orderCode, technical_merchant_id: merchantId },
     });
     if (!orm) return null;
     return orderOrmToDomain(orm);
@@ -55,7 +59,7 @@ export class OrderRepositoryImpl implements IOrderRepository {
     const limit = Math.min(100, Math.max(1, params.limit ?? 20));
     const qb = repo
       .createQueryBuilder('o')
-      .where('o.merchant_id = :merchantId', { merchantId: params.merchantId });
+      .where('o.technical_merchant_id = :merchantId', { merchantId: params.merchantId });
     if (params.fromDate) {
       qb.andWhere('o.order_date >= :fromDate', { fromDate: params.fromDate });
     }
@@ -63,10 +67,7 @@ export class OrderRepositoryImpl implements IOrderRepository {
       qb.andWhere('o.order_date <= :toDate', { toDate: params.toDate });
     }
     qb.orderBy('o.order_date', 'DESC');
-    const [rows, total] = await qb
-      .skip((page - 1) * limit)
-      .take(limit)
-      .getManyAndCount();
-    return { data: rows.map(orderOrmToDomain), total };
+    const [rows, total] = await qb.skip((page - 1) * limit).take(limit).getManyAndCount();
+    return { data: rows.map((r) => orderOrmToDomain(r)), total };
   }
 }

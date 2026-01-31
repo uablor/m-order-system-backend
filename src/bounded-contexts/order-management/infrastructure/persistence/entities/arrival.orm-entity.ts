@@ -8,13 +8,16 @@ import {
 @Entity('arrivals', { engine: 'InnoDB' })
 export class ArrivalOrmEntity {
   @PrimaryColumn('char', { length: 36 })
-  arrival_id!: string;
+  technical_id!: string;
+
+  @Column({ type: 'char', length: 36, unique: true })
+  domain_id!: string;
 
   @Column({ type: 'char', length: 36 })
-  order_id!: string;
+  technical_order_id!: string;
 
   @Column({ type: 'char', length: 36 })
-  merchant_id!: string;
+  technical_merchant_id!: string;
 
   @Column({ type: 'date' })
   arrived_date!: Date;
@@ -23,7 +26,7 @@ export class ArrivalOrmEntity {
   arrived_time!: string | null;
 
   @Column({ type: 'char', length: 36 })
-  recorded_by!: string;
+  technical_user_id!: string;
 
   @Column({ type: 'text', nullable: true })
   notes!: string | null;

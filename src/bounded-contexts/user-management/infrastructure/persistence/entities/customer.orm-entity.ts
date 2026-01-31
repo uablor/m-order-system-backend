@@ -9,10 +9,13 @@ import {
 @Entity('customers', { engine: 'InnoDB' })
 export class CustomerOrmEntity {
   @PrimaryColumn('char', { length: 36 })
-  customer_id!: string;
+  technical_id!: string;
+
+  @Column({ type: 'char', length: 36, unique: true })
+  domain_id!: string;
 
   @Column({ type: 'char', length: 36 })
-  merchant_id!: string;
+  technical_merchant_id!: string;
 
   @Column({ type: 'varchar', length: 255 })
   customer_name!: string;

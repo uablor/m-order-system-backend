@@ -8,16 +8,19 @@ import {
 @Entity('customer_messages', { engine: 'InnoDB' })
 export class CustomerMessageOrmEntity {
   @PrimaryColumn('char', { length: 36 })
-  message_id!: string;
+  technical_id!: string;
+
+  @Column({ type: 'char', length: 36, unique: true })
+  domain_id!: string;
 
   @Column({ type: 'char', length: 36 })
-  customer_id!: string;
+  technical_customer_id!: string;
 
   @Column({ type: 'char', length: 36 })
-  merchant_id!: string;
+  technical_merchant_id!: string;
 
   @Column({ type: 'char', length: 36 })
-  order_id!: string;
+  technical_order_id!: string;
 
   @Column({ type: 'varchar', length: 50 })
   message_type!: string;

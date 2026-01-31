@@ -8,13 +8,16 @@ import {
 @Entity('customer_orders', { engine: 'InnoDB' })
 export class CustomerOrderOrmEntity {
   @PrimaryColumn('char', { length: 36 })
-  customer_order_id!: string;
+  technical_id!: string;
+
+  @Column({ type: 'char', length: 36, unique: true })
+  domain_id!: string;
 
   @Column({ type: 'char', length: 36 })
-  order_id!: string;
+  technical_order_id!: string;
 
   @Column({ type: 'char', length: 36 })
-  customer_id!: string;
+  technical_customer_id!: string;
 
   @Column({ type: 'decimal', precision: 18, scale: 2, default: 0 })
   total_selling_amount_lak!: number;

@@ -38,7 +38,7 @@ export class ArrivalRepositoryImpl implements IArrivalRepository {
   async save(aggregate: ArrivalAggregate): Promise<ArrivalAggregate> {
     const { arrivalRepo, itemRepo } = this.getRepos();
     const orm = arrivalRepo.create(
-      arrivalDomainToOrm(aggregate) as Partial<ArrivalOrmEntity>,
+      arrivalDomainToOrm(aggregate, { merchantId: '', recordedBy: '' }) as Partial<ArrivalOrmEntity>,
     );
     const saved = await arrivalRepo.save(orm);
 
@@ -46,18 +46,18 @@ export class ArrivalRepositoryImpl implements IArrivalRepository {
       const itemOrms = aggregate.items.map((item) =>
         itemRepo.create(
           arrivalItemDomainToOrm(item) as Partial<ArrivalItemOrmEntity> & {
-            arrival_id: string;
+            technical_arrival_id: string;
           },
         ),
       );
       for (const item of itemOrms) {
-        (item as { arrival_id: string }).arrival_id = saved.domain_id;
+        (item as { technical_arrival_id: string }).technical_arrival_id = saved.technical_id;
       }
       await itemRepo.save(itemOrms);
     }
 
     const items = await itemRepo.find({
-      where: { arrival_id: saved.domain_id },
+      where: { technical_arrival_id: saved.technical_id },
     });
     return arrivalOrmToDomain(saved, items);
   }
@@ -66,7 +66,7 @@ export class ArrivalRepositoryImpl implements IArrivalRepository {
     const { arrivalRepo, itemRepo } = this.getRepos();
     const orm = await arrivalRepo.findOne({ where: { domain_id: id } });
     if (!orm) return null;
-    const items = await itemRepo.find({ where: { arrival_id: id } });
+    const items = await itemRepo.find({ where: { technical_arrival_id: orm.technical_id } });
     return arrivalOrmToDomain(orm, items);
   }
 
@@ -78,14 +78,14 @@ export class ArrivalRepositoryImpl implements IArrivalRepository {
     const limit = Math.min(100, Math.max(1, params.limit ?? 20));
     const qb = arrivalRepo.createQueryBuilder('a');
     if (params.orderId) {
-      qb.andWhere('a.order_id = :orderId', { orderId: params.orderId });
+      qb.andWhere('a.technical_order_id = :orderId', { orderId: params.orderId });
     }
     qb.orderBy('a.arrival_date', 'DESC');
     const [rows, total] = await qb.skip((page - 1) * limit).take(limit).getManyAndCount();
 
     const data: ArrivalAggregate[] = [];
     for (const row of rows) {
-      const items = await itemRepo.find({ where: { arrival_id: row.domain_id } });
+      const items = await itemRepo.find({ where: { technical_arrival_id: row.technical_id } });
       data.push(arrivalOrmToDomain(row, items));
     }
     return { data, total };

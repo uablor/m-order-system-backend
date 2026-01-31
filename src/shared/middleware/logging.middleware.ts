@@ -3,6 +3,7 @@ import { getAppLogger } from '../logger/app.logger';
 import type { RequestWithId } from './request-id.middleware';
 import type { RequestWithTiming } from './timing.middleware';
 
+
 const logger = getAppLogger('HTTP');
 
 export function loggingMiddleware(

@@ -8,10 +8,13 @@ import {
 @Entity('order_items', { engine: 'InnoDB' })
 export class OrderItemOrmEntity {
   @PrimaryColumn('char', { length: 36 })
-  item_id!: string;
+  technical_id!: string;
+
+  @Column({ type: 'char', length: 36, unique: true })
+  domain_id!: string;
 
   @Column({ type: 'char', length: 36 })
-  order_id!: string;
+  technical_order_id!: string;
 
   @Column({ type: 'varchar', length: 255 })
   product_name!: string;

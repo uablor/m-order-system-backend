@@ -12,7 +12,10 @@ import { RoleOrmEntity } from './role.orm-entity';
 @Entity('users', { engine: 'InnoDB' })
 export class UserOrmEntity {
   @PrimaryColumn('char', { length: 36 })
-  user_id!: string;
+  technical_id!: string;
+
+  @Column({ type: 'char', length: 36, unique: true })
+  domain_id!: string;
 
   @Column({ type: 'varchar', length: 255, unique: true })
   email!: string;
@@ -24,10 +27,10 @@ export class UserOrmEntity {
   full_name!: string;
 
   @Column({ type: 'char', length: 36 })
-  role_id!: string;
+  technical_role_id!: string;
 
   @Column({ type: 'char', length: 36 })
-  merchant_id!: string;
+  technical_merchant_id!: string;
 
   @Column({ type: 'boolean', default: true })
   is_active!: boolean;
@@ -42,6 +45,6 @@ export class UserOrmEntity {
   last_login!: Date | null;
 
   @ManyToOne(() => RoleOrmEntity, { eager: false })
-  @JoinColumn({ name: 'role_id', referencedColumnName: 'role_id' })
+  @JoinColumn({ name: 'technical_role_id', referencedColumnName: 'technical_id' })
   role!: RoleOrmEntity | null;
 }

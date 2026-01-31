@@ -1,24 +1,25 @@
-import type { RoleEntity, PermissionEntity } from '../../../domain/entities';
+import type { RoleEntity } from '../../../domain/entities/role.entity';
 import { RoleEntity as RoleEntityClass } from '../../../domain/entities/role.entity';
-import type { RoleOrmEntity, PermissionOrmEntity } from '../entities';
+import type { RoleOrmEntity } from '../entities/role.orm-entity';
+import type { PermissionOrmEntity } from '../entities/permission.orm-entity';
 import { permissionOrmToDomain } from './permission.mapper';
 
-export function roleOrmToDomain(orm: RoleOrmEntity, permissions?: PermissionEntity[]): RoleEntity {
+export function roleOrmToDomain(orm: RoleOrmEntity): RoleEntity {
   return RoleEntityClass.create({
     id: orm.domain_id,
     roleName: orm.role_name,
     description: orm.description ?? undefined,
-    permissions: permissions ?? (orm.permissions?.map(permissionOrmToDomain) ?? undefined),
-    createdAt: orm.created_at,
-    updatedAt: orm.updated_at,
+    permissions: orm.permissions?.map((p: PermissionOrmEntity) => permissionOrmToDomain(p)),
+    createdAt: undefined,
+    updatedAt: undefined,
   });
 }
 
 export function roleDomainToOrm(entity: RoleEntity): Partial<RoleOrmEntity> {
   return {
+    technical_id: entity.id,
     domain_id: entity.id,
     role_name: entity.roleName,
     description: entity.description ?? null,
-    updated_at: entity.updatedAt ?? new Date(),
   };
 }

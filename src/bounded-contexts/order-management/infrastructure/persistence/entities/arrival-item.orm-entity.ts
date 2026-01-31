@@ -8,13 +8,16 @@ import {
 @Entity('arrival_items', { engine: 'InnoDB' })
 export class ArrivalItemOrmEntity {
   @PrimaryColumn('char', { length: 36 })
-  arrival_item_id!: string;
+  technical_id!: string;
+
+  @Column({ type: 'char', length: 36, unique: true })
+  domain_id!: string;
 
   @Column({ type: 'char', length: 36 })
-  arrival_id!: string;
+  technical_arrival_id!: string;
 
   @Column({ type: 'char', length: 36 })
-  order_item_id!: string;
+  technical_order_item_id!: string;
 
   @Column({ type: 'decimal', precision: 12, scale: 4, default: 0 })
   arrived_quantity!: number;

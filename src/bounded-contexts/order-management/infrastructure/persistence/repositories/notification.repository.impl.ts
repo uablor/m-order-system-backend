@@ -14,12 +14,15 @@ import { getTransactionManager } from '../../../../../shared/infrastructure/pers
 export class NotificationRepositoryImpl implements INotificationRepository {
   constructor(
     @InjectRepository(NotificationOrmEntity)
-    private readonly repo: Repository<NotificationOrmEntity>,
+    private readonly notificationRepo: Repository<NotificationOrmEntity>,
   ) {}
 
   private getRepo(): Repository<NotificationOrmEntity> {
     const em = getTransactionManager();
-    return em ? em.getRepository(NotificationOrmEntity) : this.repo;
+    if (em) {
+      return em.getRepository(NotificationOrmEntity);
+    }
+    return this.notificationRepo;
   }
 
   async save(aggregate: NotificationAggregate): Promise<NotificationAggregate> {
@@ -27,6 +30,7 @@ export class NotificationRepositoryImpl implements INotificationRepository {
     const orm = repo.create(
       notificationDomainToOrm(aggregate) as Partial<NotificationOrmEntity>,
     );
+    orm.technical_id = aggregate.id;
     const saved = await repo.save(orm);
     return notificationOrmToDomain(saved);
   }
