@@ -1,13 +1,17 @@
+import { UniqueEntityId } from 'src/shared/domain/value-objects';
 import { AggregateRoot } from '../../../../shared/domain/aggregate-root';
 import type { EntityProps } from '../../../../shared/domain/entity-base';
+import { IPasswordHasher } from '../services/password-hasher.port';
+import { Email, Password } from '../value-objects';
 import type { RoleEntity } from './role.entity';
+import { FullName } from '../value-objects/full-name.vo';
 
 export interface UserEntityProps extends EntityProps {
-  email: string;
-  passwordHash: string;
-  fullName: string;
-  roleId: string;
-  merchantId: string;
+  email: Email;
+  passwordHash: Password;
+  fullName: FullName;
+  roleId: UniqueEntityId;
+  merchantId: UniqueEntityId;
   isActive: boolean;
   lastLogin?: Date;
   role?: { roleName: string };
@@ -26,28 +30,43 @@ export class UserEntity extends AggregateRoot<UserEntityProps> {
   ): UserEntity {
     return new UserEntity({
       ...props,
+      id: UniqueEntityId.create(),
       createdAt: props.createdAt ?? new Date(),
       updatedAt: props.updatedAt ?? new Date(),
     });
   }
 
-  get email(): string {
+  static async createWithPassword(
+    props: Omit<UserEntityProps, 'passwordHash' | 'id' | 'isActive'>,
+    password: string,
+    hasher: IPasswordHasher,
+  ) {
+    const hash = await hasher.hash(password);
+    return new UserEntity({
+      ...props,
+      id: UniqueEntityId.create(),
+      passwordHash: Password.fromHash(hash),
+      isActive: true,
+    });
+  }
+
+  get email(): Email {
     return this.props.email;
   }
 
-  get passwordHash(): string {
+  get passwordHash(): Password {
     return this.props.passwordHash;
   }
 
-  get fullName(): string {
+  get fullName(): FullName {
     return this.props.fullName;
   }
 
-  get roleId(): string {
+  get roleId(): UniqueEntityId {
     return this.props.roleId;
   }
 
-  get merchantId(): string {
+  get merchantId(): UniqueEntityId {
     return this.props.merchantId;
   }
 

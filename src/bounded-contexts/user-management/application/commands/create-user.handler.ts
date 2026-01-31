@@ -9,9 +9,14 @@ import { UserEntity } from '../../domain/entities/user.entity';
 import { Email } from '../../domain/value-objects/email.vo';
 import { EmailAlreadyExistsException } from '../../domain/exceptions';
 import { generateUuid } from '../../../../shared/utils';
+import { UniqueEntityId } from 'src/shared/domain/value-objects';
+import { FullName } from '../../domain/value-objects/full-name.vo';
 
 @CommandHandler(CreateUserCommand)
-export class CreateUserHandler implements ICommandHandler<CreateUserCommand, UserEntity> {
+export class CreateUserHandler implements ICommandHandler<
+  CreateUserCommand,
+  UserEntity
+> {
   constructor(
     @Inject(USER_REPOSITORY)
     private readonly userRepository: IUserRepository,
@@ -25,16 +30,17 @@ export class CreateUserHandler implements ICommandHandler<CreateUserCommand, Use
     if (existing) {
       throw new EmailAlreadyExistsException(emailVo.value);
     }
-    const passwordHash = await this.passwordHasher.hash(command.password);
-    const user = UserEntity.create({
-      id: generateUuid(),
-      email: emailVo.value,
-      passwordHash,
-      fullName: command.fullName.trim(),
-      roleId: command.roleId,
-      merchantId: command.merchantId,
-      isActive: true,
-    });
+    const user = await UserEntity.createWithPassword(
+      {
+        email: emailVo,
+        fullName: FullName.create(command.fullName),
+        roleId: UniqueEntityId.create(command.roleId),
+        merchantId: UniqueEntityId.create(command.merchantId),
+      },
+      command.password,
+      this.passwordHasher,
+    );
+
     return this.userRepository.save(user);
   }
 }

@@ -1,5 +1,7 @@
+import { UniqueEntityId } from "./value-objects";
+
 export interface EntityProps {
-  id: string;
+  id: UniqueEntityId;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -11,7 +13,7 @@ export abstract class Entity<T extends EntityProps> {
     this.props = props;
   }
 
-  get id(): string {
+  get id(): UniqueEntityId {
     return this.props.id;
   }
 

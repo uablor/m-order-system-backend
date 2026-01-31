@@ -1,9 +1,10 @@
 import type { EntityProps } from '../../../../shared/domain/entity-base';
 import { Entity } from '../../../../shared/domain/entity-base';
+import { RoleName } from '../value-objects/role-name.vo';
 import type { PermissionEntity } from './permission.entity';
 
 export interface RoleEntityProps extends EntityProps {
-  roleName: string;
+  roleName: RoleName;
   description?: string;
   permissions?: PermissionEntity[];
 }
@@ -26,7 +27,7 @@ export class RoleEntity extends Entity<RoleEntityProps> {
     });
   }
 
-  get roleName(): string {
+  get roleName(): RoleName {
     return this.props.roleName;
   }
 

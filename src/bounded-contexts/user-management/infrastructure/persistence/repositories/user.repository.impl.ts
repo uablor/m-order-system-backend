@@ -15,14 +15,13 @@ export class UserRepositoryImpl implements IUserRepository {
 
   async save(user: UserEntity): Promise<UserEntity> {
     const orm = this.userRepo.create(userDomainToOrm(user) as Partial<UserOrmEntity>);
-    orm.technical_id = user.id;
     const saved = await this.userRepo.save(orm);
     return userOrmToDomain(saved);
   }
 
-  async findById(id: string): Promise<UserEntity | null> {
+  async findById(domainId: string): Promise<UserEntity | null> {
     const orm = await this.userRepo.findOne({
-      where: { domain_id: id },
+      where: { domain_id: domainId },
       relations: ['role'],
     });
     if (!orm) return null;

@@ -1,8 +1,9 @@
 import type { EntityProps } from '../../../../shared/domain/entity-base';
 import { Entity } from '../../../../shared/domain/entity-base';
+import { PermissionCode } from '../value-objects/permission-code.vo';
 
 export interface PermissionEntityProps extends EntityProps {
-  permissionCode: string;
+  permissionCode: PermissionCode;
   description?: string;
 }
 
@@ -24,7 +25,7 @@ export class PermissionEntity extends Entity<PermissionEntityProps> {
     });
   }
 
-  get permissionCode(): string {
+  get permissionCode(): PermissionCode {
     return this.props.permissionCode;
   }
 
