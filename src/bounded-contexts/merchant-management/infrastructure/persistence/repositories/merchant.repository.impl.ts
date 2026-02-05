@@ -8,6 +8,7 @@ import type {
 import type { MerchantAggregate } from '../../../domain/aggregates/merchant.aggregate';
 import { MerchantOrmEntity } from '../entities/merchant.orm-entity';
 import { merchantOrmToDomain, merchantDomainToOrm } from '../mappers/merchant.mapper';
+import { paginateEntity } from '@shared/infrastructure/persistence/pagination';
 
 @Injectable()
 export class MerchantRepositoryImpl implements IMerchantRepository {
@@ -31,14 +32,10 @@ export class MerchantRepositoryImpl implements IMerchantRepository {
   async findMany(
     params: MerchantRepositoryFindManyParams,
   ): Promise<{ data: MerchantAggregate[]; total: number }> {
-    const page = Math.max(1, params.page ?? 1);
-    const limit = Math.min(100, Math.max(1, params.limit ?? 20));
-    const [rows, total] = await this.repo.findAndCount({
-      order: { created_at: 'DESC' },
-      skip: (page - 1) * limit,
-      take: limit,
+    const result = await paginateEntity(this.repo, { page: params.page, limit: params.limit }, {
+      order: { created_at: 'DESC' } as { created_at: 'DESC' },
     });
-    return { data: rows.map(merchantOrmToDomain), total };
+    return { data: result.data.map(merchantOrmToDomain), total: result.total };
   }
 
   async delete(id: string): Promise<void> {

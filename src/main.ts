@@ -8,7 +8,7 @@ import {
   loggingMiddleware,
   rateLimitMiddleware,
 } from './shared/middleware';
-import { LoggingInterceptor, TransformResponseInterceptor } from './shared/interceptors';
+import { LoggingInterceptor, GlobalResponseInterceptor } from './shared/interceptors';
 import { GlobalExceptionFilter } from './shared/filters';
 import { LoggerService } from './shared/logger';
 
@@ -32,7 +32,7 @@ async function bootstrap() {
   );
   app.useGlobalInterceptors(
     new LoggingInterceptor(app.get(LoggerService)),
-    new TransformResponseInterceptor(),
+    new GlobalResponseInterceptor(),
   );
   app.useGlobalFilters(new GlobalExceptionFilter());
 

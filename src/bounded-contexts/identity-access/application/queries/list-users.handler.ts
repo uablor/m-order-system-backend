@@ -2,6 +2,10 @@ import { Inject } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { ListUsersQuery } from './list-users.query';
 import { USER_REPOSITORY, type IUserRepository } from '../../domain/repositories/user.repository';
+import {
+  buildPaginationMeta,
+  normalizePaginationParams,
+} from '@shared/infrastructure/persistence/pagination';
 
 @QueryHandler(ListUsersQuery)
 export class ListUsersHandler implements IQueryHandler<ListUsersQuery> {
@@ -16,6 +20,8 @@ export class ListUsersHandler implements IQueryHandler<ListUsersQuery> {
       page: query.page,
       limit: query.limit,
     });
+    const { page, limit } = normalizePaginationParams(query.page, query.limit);
+    const pagination = buildPaginationMeta(total, page, limit, data.length);
     return {
       data: data.map((u) => ({
         id: u.id.value,
@@ -27,7 +33,7 @@ export class ListUsersHandler implements IQueryHandler<ListUsersQuery> {
         createdAt: u.createdAt,
         updatedAt: u.updatedAt,
       })),
-      total,
+      pagination,
     };
   }
 }

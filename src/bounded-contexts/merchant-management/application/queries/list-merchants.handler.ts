@@ -2,6 +2,10 @@ import { Inject } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { ListMerchantsQuery } from './list-merchants.query';
 import { MERCHANT_REPOSITORY, type IMerchantRepository } from '../../domain/repositories/merchant.repository';
+import {
+  buildPaginationMeta,
+  normalizePaginationParams,
+} from '@shared/infrastructure/persistence/pagination';
 
 @QueryHandler(ListMerchantsQuery)
 export class ListMerchantsHandler implements IQueryHandler<ListMerchantsQuery> {
@@ -15,6 +19,8 @@ export class ListMerchantsHandler implements IQueryHandler<ListMerchantsQuery> {
       page: query.page,
       limit: query.limit,
     });
+    const { page, limit } = normalizePaginationParams(query.page, query.limit);
+    const pagination = buildPaginationMeta(total, page, limit, data.length);
     return {
       data: data.map((m) => ({
         id: m.id.value,
@@ -25,7 +31,7 @@ export class ListMerchantsHandler implements IQueryHandler<ListMerchantsQuery> {
         createdAt: m.createdAt,
         updatedAt: m.updatedAt,
       })),
-      total,
+      pagination,
     };
   }
 }

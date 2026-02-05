@@ -8,6 +8,7 @@ import type {
 import type { UserAggregate } from '../../../domain/aggregates/user.aggregate';
 import { UserOrmEntity } from '../entities/user.orm-entity';
 import { userOrmToDomain, userDomainToOrm } from '../mappers/user.mapper';
+import { paginateEntity } from '@shared/infrastructure/persistence/pagination';
 
 @Injectable()
 export class UserRepositoryImpl implements IUserRepository {
@@ -38,15 +39,14 @@ export class UserRepositoryImpl implements IUserRepository {
   async findMany(
     params: UserRepositoryFindManyParams,
   ): Promise<{ data: UserAggregate[]; total: number }> {
-    const page = Math.max(1, params.page ?? 1);
-    const limit = Math.min(100, Math.max(1, params.limit ?? 20));
-    const [rows, total] = await this.repo.findAndCount({
-      where: { merchant_id: params.merchantId },
-      order: { created_at: 'DESC' },
-      skip: (page - 1) * limit,
-      take: limit,
+    const result = await paginateEntity(this.repo, { page: params.page, limit: params.limit }, {
+      where: { merchant_id: params.merchantId } as object,
+      order: { created_at: 'DESC' } as { created_at: 'DESC' },
     });
-    return { data: rows.map(userOrmToDomain), total };
+    return {
+      data: result.data.map(userOrmToDomain),
+      total: result.total,
+    };
   }
 
   async delete(id: string): Promise<void> {

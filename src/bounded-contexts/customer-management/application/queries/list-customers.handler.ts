@@ -5,6 +5,10 @@ import {
   CUSTOMER_REPOSITORY,
   type ICustomerRepository,
 } from '../../domain/repositories/customer.repository';
+import {
+  buildPaginationMeta,
+  normalizePaginationParams,
+} from '@shared/infrastructure/persistence/pagination';
 
 @QueryHandler(ListCustomersQuery)
 export class ListCustomersHandler implements IQueryHandler<ListCustomersQuery> {
@@ -19,6 +23,8 @@ export class ListCustomersHandler implements IQueryHandler<ListCustomersQuery> {
       page: query.page,
       limit: query.limit,
     });
+    const { page, limit } = normalizePaginationParams(query.page, query.limit);
+    const pagination = buildPaginationMeta(total, page, limit, data.length);
     return {
       data: data.map((c) => ({
         id: c.id.value,
@@ -30,7 +36,7 @@ export class ListCustomersHandler implements IQueryHandler<ListCustomersQuery> {
         createdAt: c.createdAt,
         updatedAt: c.updatedAt,
       })),
-      total,
+      pagination,
     };
   }
 }

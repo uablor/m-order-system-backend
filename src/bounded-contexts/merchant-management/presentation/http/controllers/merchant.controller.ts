@@ -24,9 +24,11 @@ import { GetMerchantQuery } from '../../../application/queries/get-merchant.quer
 import { ListMerchantsQuery } from '../../../application/queries/list-merchants.query';
 import { CreateMerchantDto } from '../../../application/dto/create-merchant.dto';
 import { UpdateMerchantDto } from '../../../application/dto/update-merchant.dto';
+
+import { PaginationQuery, type PaginationQueryParams } from '@shared/application/pagination';
+import { Roles } from 'src/bounded-contexts/identity-access/application/decorators/roles.decorator';
 import { RolesGuard } from 'src/bounded-contexts/identity-access/infrastructure/external-services/roles.guard';
 import { JwtAuthGuard } from 'src/bounded-contexts/identity-access/infrastructure/external-services/jwt-auth.guard';
-import { Roles } from 'src/bounded-contexts/identity-access/application/decorators/roles.decorator';
 
 @ApiTags('Merchants')
 @Controller('merchants')
@@ -59,9 +61,9 @@ export class MerchantController {
   @ApiOperation({ summary: 'List merchants' })
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'limit', required: false })
-  async list(@Query('page') page?: number, @Query('limit') limit?: number) {
+  async list(@PaginationQuery() pagination: PaginationQueryParams) {
     return this.queryBus.execute(
-      new ListMerchantsQuery(page ? Number(page) : undefined, limit ? Number(limit) : undefined),
+      new ListMerchantsQuery(pagination.page, pagination.limit),
     );
   }
 

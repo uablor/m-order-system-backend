@@ -26,6 +26,7 @@ import { GetCustomerByTokenQuery } from '../../../application/queries/get-custom
 import { ListCustomersQuery } from '../../../application/queries/list-customers.query';
 import { CreateCustomerDto } from '../../../application/dto/create-customer.dto';
 import { UpdateCustomerDto } from '../../../application/dto/update-customer.dto';
+import { PaginationQuery, type PaginationQueryParams } from '@shared/application/pagination';
 import { JwtAuthGuard } from 'src/bounded-contexts/identity-access/infrastructure/external-services/jwt-auth.guard';
 import { RolesGuard } from 'src/bounded-contexts/identity-access/infrastructure/external-services/roles.guard';
 import { Roles } from 'src/bounded-contexts/identity-access/application/decorators/roles.decorator';
@@ -63,11 +64,10 @@ export class CustomerController {
   @ApiQuery({ name: 'limit', required: false })
   async list(
     @Query('merchantId') merchantId: string,
-    @Query('page') page?: number,
-    @Query('limit') limit?: number,
+    @PaginationQuery() pagination: PaginationQueryParams,
   ) {
     return this.queryBus.execute(
-      new ListCustomersQuery(merchantId, page ? Number(page) : undefined, limit ? Number(limit) : undefined),
+      new ListCustomersQuery(merchantId, pagination.page, pagination.limit),
     );
   }
 

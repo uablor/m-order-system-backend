@@ -279,7 +279,41 @@ context-name/
 
 ---
 
-## 11. Transaction Rules
+## 11. Pagination Standard
+
+- **All list APIs MUST use the shared pagination helper.** Use `paginateEntity` (or `paginateRaw`) from `shared/infrastructure/persistence/pagination` in repository implementations. Use `normalizePaginationParams` and `buildPaginationMeta` in query handlers to build the `pagination` object for the response envelope.
+- **Controllers MUST use `@PaginationQuery()`** for list endpoints to parse `page` and `limit` from the query string. Use `BasePaginationQuery` (or equivalent) in application layer for list queries so page/limit are consistent (defaults: page 1, limit 20, max limit 100).
+- **Pagination belongs to Application or Infrastructure.** Never Domain. Domain repository interfaces expose only `findMany(params)` returning `{ data: T[]; total: number }`; pagination meta (page, limit, totalPages, count) is added in the application layer (query handler) and in the response envelope.
+
+---
+
+## 12. Response Envelope Standard
+
+- **All APIs MUST return the Global Response Contract** via the global response interceptor. Contract shape:
+  - `status`: `"success"` | `"error"`
+  - `message`: string
+  - `data`: payload (or `null` on error)
+  - `pagination?`: `{ total, count, limit, totalPages, currentPage }` for list responses
+  - `error?`: `{ code, details? }` when `status === "error"`
+- Use `ResponseBuilder.success(data)`, `ResponseBuilder.successPaginated(data, pagination)`, and `ResponseBuilder.error(message, code, details)` from `shared/application/response`. The **GlobalResponseInterceptor** wraps all successful handler returns into this envelope; the **GlobalExceptionFilter** uses `ResponseBuilder.error` for all error responses.
+
+---
+
+## 13. Mapper Enforcement Rule
+
+- **Repository:** Returns **domain entities/aggregates** only. Infrastructure repository impl maps ORM → domain via mappers before returning.
+- **Query handler:** Returns **read DTOs** (or plain objects used as DTOs) built from domain entities via mapping logic in the handler (or a dedicated read mapper). Never returns ORM entities.
+- **Controller:** Never exposes ORM entities. Controllers only dispatch commands/queries and return the result of the bus; the interceptor wraps that in the response envelope.
+
+---
+
+## 14. Query Handler Output Rule
+
+- **Query handlers MUST return DTOs only** (or objects that represent the read model). Map domain entities to a stable, documented shape (e.g. `{ id, email, fullName, ... }`). For list queries, return `{ data: DTO[], pagination }` so the global interceptor can wrap them in the response envelope with `pagination` included.
+
+---
+
+## 15. Transaction Rules
 
 - **Aggregate = transaction boundary.** One transaction per aggregate save (one root and its children).
 - **Never** span a single transaction across multiple aggregates (e.g. “save Order and Payment in one transaction”). Use application-level coordination or eventual consistency (e.g. saga, outbox).
@@ -287,7 +321,7 @@ context-name/
 
 ---
 
-## 12. CQRS Rules
+## 16. CQRS Rules
 
 - **Command:** Write model. Changes state. Goes through aggregate root and repository.
 - **Query:** Read model. No state change. May use repository find methods or dedicated read models; can bypass domain for performance.
@@ -295,7 +329,7 @@ context-name/
 
 ---
 
-## 13. Domain Event Rules
+## 17. Domain Event Rules
 
 **When to use:**
 
@@ -312,7 +346,7 @@ context-name/
 
 ---
 
-## 14. Future Scaling Rules
+## 18. Future Scaling Rules
 
 - **Event-driven:** Domain events are the natural boundary for async integration and eventual consistency. Prefer events over direct HTTP calls between contexts.
 - **Microservices split:** Bounded contexts map to potential services. Keep context boundaries strict and avoid cross-context repository/ORM coupling so each context can be extracted.
@@ -321,7 +355,7 @@ context-name/
 
 ---
 
-## 15. Detected Violations and Suggested Improvements
+## 19. Detected Violations and Suggested Improvements
 
 Based on the current codebase:
 
@@ -343,7 +377,7 @@ Based on the current codebase:
 
 ---
 
-## 16. Summary
+## 20. Summary
 
 - **Architecture:** DDD + Clean Architecture + NestJS; modular monolith with **user-management** and **order-management**; CQRS for commands and queries.
 - **Bounded context:** Strict boundaries; no direct repository or domain coupling across contexts; auth may be shared at presentation level.

@@ -27,6 +27,7 @@ import { UpdateUserDto } from '../../../application/dto/update-user.dto';
 import { JwtAuthGuard } from '../../../infrastructure/external-services/jwt-auth.guard';
 import { RolesGuard } from '../../../infrastructure/external-services/roles.guard';
 import { Roles } from '../../../application/decorators/roles.decorator';
+import { PaginationQuery, type PaginationQueryParams } from '@shared/application/pagination';
 
 @ApiTags('Users')
 @Controller('users')
@@ -63,11 +64,10 @@ export class UserController {
   @ApiQuery({ name: 'limit', required: false })
   async list(
     @Query('merchantId') merchantId: string,
-    @Query('page') page?: number,
-    @Query('limit') limit?: number,
+    @PaginationQuery() pagination: PaginationQueryParams,
   ) {
     return this.queryBus.execute(
-      new ListUsersQuery(merchantId, page ? Number(page) : undefined, limit ? Number(limit) : undefined),
+      new ListUsersQuery(merchantId, pagination.page, pagination.limit),
     );
   }
 
