@@ -17,7 +17,10 @@ import {
   CustomerOrderItemOrmEntity,
   ArrivalOrmEntity,
   ArrivalItemOrmEntity,
+  NotificationOrmEntity,
+  PaymentOrmEntity,
 } from '../bounded-contexts/order-management/infrastructure/persistence/entities';
+import { CustomerMessageOrmEntity } from '../bounded-contexts/customer-interaction/infrastructure/persistence/entities/customer-message.orm-entity';
 
 export const ormEntities = [
   PermissionOrmEntity,
@@ -33,4 +36,7 @@ export const ormEntities = [
   CustomerOrderItemOrmEntity,
   ArrivalOrmEntity,
   ArrivalItemOrmEntity,
+  NotificationOrmEntity,
+  PaymentOrmEntity,
+  CustomerMessageOrmEntity,
 ];

@@ -5,3 +5,5 @@ export { CustomerOrderOrmEntity } from './customer-order.orm-entity';
 export { CustomerOrderItemOrmEntity } from './customer-order-item.orm-entity';
 export { ArrivalOrmEntity } from './arrival.orm-entity';
 export { ArrivalItemOrmEntity } from './arrival-item.orm-entity';
+export { NotificationOrmEntity } from './notification.orm-entity';
+export { PaymentOrmEntity } from './payment.orm-entity';

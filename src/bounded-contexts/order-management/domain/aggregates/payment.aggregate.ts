@@ -115,4 +115,9 @@ export class PaymentAggregate extends AggregateRoot<PaymentAggregateProps> {
     (this.props as PaymentAggregateProps).rejectReason = reason;
     (this.props as PaymentAggregateProps).updatedAt = new Date();
   }
+
+  updateNotes(notes: string): void {
+    (this.props as PaymentAggregateProps).notes = notes;
+    (this.props as PaymentAggregateProps).updatedAt = new Date();
+  }
 }

@@ -1,0 +1,9 @@
+export class ListMessagesQuery {
+  constructor(
+    public readonly merchantId: string,
+    public readonly customerId?: string,
+    public readonly orderId?: string,
+    public readonly page?: number,
+    public readonly limit?: number,
+  ) {}
+}

@@ -10,15 +10,21 @@ import {
   CustomerOrderItemOrmEntity,
   ArrivalOrmEntity,
   ArrivalItemOrmEntity,
+  NotificationOrmEntity,
+  PaymentOrmEntity,
 } from './infrastructure/persistence/entities';
 import { EXCHANGE_RATE_REPOSITORY } from './domain/repositories/exchange-rate.repository';
 import { ORDER_REPOSITORY } from './domain/repositories/order.repository';
 import { CUSTOMER_ORDER_REPOSITORY } from './domain/repositories/customer-order.repository';
 import { ARRIVAL_REPOSITORY } from './domain/repositories/arrival.repository';
+import { NOTIFICATION_REPOSITORY } from './domain/repositories/notification.repository';
+import { PAYMENT_REPOSITORY } from './domain/repositories/payment.repository';
 import { ExchangeRateRepositoryImpl } from './infrastructure/persistence/repositories/exchange-rate.repository.impl';
 import { OrderRepositoryImpl } from './infrastructure/persistence/repositories/order.repository.impl';
 import { CustomerOrderRepositoryImpl } from './infrastructure/persistence/repositories/customer-order.repository.impl';
 import { ArrivalRepositoryImpl } from './infrastructure/persistence/repositories/arrival.repository.impl';
+import { NotificationRepositoryImpl } from './infrastructure/persistence/repositories/notification.repository.impl';
+import { PaymentRepositoryImpl } from './infrastructure/persistence/repositories/payment.repository.impl';
 
 import { CreateExchangeRateHandler } from './application/commands/create-exchange-rate.handler';
 import { UpdateExchangeRateHandler } from './application/commands/update-exchange-rate.handler';
@@ -37,6 +43,12 @@ import { DeleteCustomerOrderHandler } from './application/commands/delete-custom
 import { CreateArrivalHandler } from './application/commands/create-arrival.handler';
 import { AddArrivalItemHandler } from './application/commands/add-arrival-item.handler';
 import { ConfirmArrivalHandler } from './application/commands/confirm-arrival.handler';
+import { CreateNotificationHandler } from './application/commands/create-notification.handler';
+import { RetryNotificationHandler } from './application/commands/retry-notification.handler';
+import { CreatePaymentHandler } from './application/commands/create-payment.handler';
+import { UpdatePaymentHandler } from './application/commands/update-payment.handler';
+import { VerifyPaymentHandler } from './application/commands/verify-payment.handler';
+import { RejectPaymentHandler } from './application/commands/reject-payment.handler';
 
 import { GetExchangeRateHandler } from './application/queries/get-exchange-rate.handler';
 import { ListExchangeRatesHandler } from './application/queries/list-exchange-rates.handler';
@@ -47,11 +59,17 @@ import { GetCustomerOrderHandler } from './application/queries/get-customer-orde
 import { ListCustomerOrdersHandler } from './application/queries/list-customer-orders.handler';
 import { GetArrivalHandler } from './application/queries/get-arrival.handler';
 import { ListArrivalsHandler } from './application/queries/list-arrivals.handler';
+import { GetNotificationHandler } from './application/queries/get-notification.handler';
+import { ListNotificationsHandler } from './application/queries/list-notifications.handler';
+import { GetPaymentHandler } from './application/queries/get-payment.handler';
+import { ListPaymentsHandler } from './application/queries/list-payments.handler';
 
 import { ExchangeRateController } from './presentation/http/controllers/exchange-rate.controller';
 import { OrderController } from './presentation/http/controllers/order.controller';
 import { CustomerOrderController } from './presentation/http/controllers/customer-order.controller';
 import { ArrivalController } from './presentation/http/controllers/arrival.controller';
+import { NotificationController } from './presentation/http/controllers/notification.controller';
+import { PaymentController } from './presentation/http/controllers/payment.controller';
 
 const CommandHandlers = [
   CreateExchangeRateHandler,
@@ -71,6 +89,12 @@ const CommandHandlers = [
   CreateArrivalHandler,
   AddArrivalItemHandler,
   ConfirmArrivalHandler,
+  CreateNotificationHandler,
+  RetryNotificationHandler,
+  CreatePaymentHandler,
+  UpdatePaymentHandler,
+  VerifyPaymentHandler,
+  RejectPaymentHandler,
 ];
 
 const QueryHandlers = [
@@ -83,6 +107,10 @@ const QueryHandlers = [
   ListCustomerOrdersHandler,
   GetArrivalHandler,
   ListArrivalsHandler,
+  GetNotificationHandler,
+  ListNotificationsHandler,
+  GetPaymentHandler,
+  ListPaymentsHandler,
 ];
 
 @Module({
@@ -97,6 +125,8 @@ const QueryHandlers = [
       CustomerOrderItemOrmEntity,
       ArrivalOrmEntity,
       ArrivalItemOrmEntity,
+      NotificationOrmEntity,
+      PaymentOrmEntity,
     ]),
   ],
   controllers: [
@@ -104,12 +134,16 @@ const QueryHandlers = [
     OrderController,
     CustomerOrderController,
     ArrivalController,
+    NotificationController,
+    PaymentController,
   ],
   providers: [
     { provide: EXCHANGE_RATE_REPOSITORY, useClass: ExchangeRateRepositoryImpl },
     { provide: ORDER_REPOSITORY, useClass: OrderRepositoryImpl },
     { provide: CUSTOMER_ORDER_REPOSITORY, useClass: CustomerOrderRepositoryImpl },
     { provide: ARRIVAL_REPOSITORY, useClass: ArrivalRepositoryImpl },
+    { provide: NOTIFICATION_REPOSITORY, useClass: NotificationRepositoryImpl },
+    { provide: PAYMENT_REPOSITORY, useClass: PaymentRepositoryImpl },
     ...CommandHandlers,
     ...QueryHandlers,
   ],
@@ -118,6 +152,8 @@ const QueryHandlers = [
     ORDER_REPOSITORY,
     CUSTOMER_ORDER_REPOSITORY,
     ARRIVAL_REPOSITORY,
+    NOTIFICATION_REPOSITORY,
+    PAYMENT_REPOSITORY,
   ],
 })
 export class OrderManagementModule {}

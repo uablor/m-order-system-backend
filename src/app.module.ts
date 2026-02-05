@@ -12,6 +12,7 @@ import { IdentityAccessModule } from './bounded-contexts/identity-access/identit
 import { MerchantManagementModule } from './bounded-contexts/merchant-management/merchant-management.module';
 import { CustomerManagementModule } from './bounded-contexts/customer-management/customer-management.module';
 import { OrderManagementModule } from './bounded-contexts/order-management/order-management.module';
+import { CustomerInteractionModule } from './bounded-contexts/customer-interaction/customer-interaction.module';
 import { JwtAuthGuard } from './bounded-contexts/identity-access/infrastructure/external-services/jwt-auth.guard';
 import { ThrottlerGuard } from '@nestjs/throttler';
 
@@ -39,6 +40,7 @@ import { ThrottlerGuard } from '@nestjs/throttler';
     MerchantManagementModule,
     CustomerManagementModule,
     OrderManagementModule,
+    CustomerInteractionModule,
   ],
   controllers: [AppController],
   providers: [
