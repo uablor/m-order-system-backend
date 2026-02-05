@@ -33,8 +33,10 @@ export const seed001Permissions: Seed = {
     for (const p of PERMISSIONS) {
       const existing = await repo.findOne({ where: { code: p.code } });
       if (!existing) {
+        const domainId = uuid();
         const entity = repo.create({
-          id: uuid(),
+          id: domainId,
+          domain_id: domainId,
           code: p.code,
           name: p.name,
           description: p.description,

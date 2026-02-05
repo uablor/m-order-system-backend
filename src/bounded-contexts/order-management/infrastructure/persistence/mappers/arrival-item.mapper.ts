@@ -5,7 +5,7 @@ import type { ArrivalItemOrmEntity } from '../entities/arrival-item.orm-entity';
 
 export function arrivalItemOrmToDomain(orm: ArrivalItemOrmEntity): ArrivalItemEntity {
   return ArrivalItemClass.create({
-    id: UniqueEntityId.create(orm.arrival_item_id),
+    id: UniqueEntityId.create(orm.domain_id ?? orm.arrival_item_id),
     arrivalId: orm.arrival_id,
     orderItemId: orm.order_item_id,
     arrivedQuantity: orm.arrived_quantity,
@@ -20,9 +20,10 @@ export function arrivalItemDomainToOrm(
   item: ArrivalItemEntity,
   arrivalId: string,
 ): Partial<ArrivalItemOrmEntity> {
-  const id = typeof item.id === 'string' ? item.id : item.id.value;
+  const domainId = typeof item.id === 'string' ? item.id : item.id.value;
   return {
-    arrival_item_id: id,
+    arrival_item_id: domainId,
+    domain_id: domainId,
     arrival_id: arrivalId,
     order_item_id: item.orderItemId,
     arrived_quantity: item.arrivedQuantity,

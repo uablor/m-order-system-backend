@@ -11,8 +11,13 @@ import { OrderOrmEntity } from './order.orm-entity';
 
 @Entity('order_items', { engine: 'InnoDB' })
 export class OrderItemOrmEntity {
+  /** Technical PK. Use domain_id for business identity. */
   @PrimaryColumn('char', { length: 36 })
   item_id!: string;
+
+  /** Domain identity (UUID). */
+  @Column({ type: 'char', length: 36, unique: true })
+  domain_id!: string;
 
   @Column({ type: 'char', length: 36 })
   order_id!: string;

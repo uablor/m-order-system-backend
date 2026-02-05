@@ -5,7 +5,7 @@ import type { PermissionOrmEntity } from '../entities/permission.orm-entity';
 
 export function permissionOrmToDomain(orm: PermissionOrmEntity): PermissionAggregate {
   return PermissionClass.fromPersistence({
-    id: UniqueEntityId.create(orm.id),
+    id: UniqueEntityId.create(orm.domain_id ?? orm.id),
     code: orm.code,
     name: orm.name,
     description: orm.description ?? undefined,
@@ -15,9 +15,10 @@ export function permissionOrmToDomain(orm: PermissionOrmEntity): PermissionAggre
 }
 
 export function permissionDomainToOrm(agg: PermissionAggregate): Partial<PermissionOrmEntity> {
-  const id = typeof agg.id === 'string' ? agg.id : agg.id.value;
+  const domainId = typeof agg.id === 'string' ? agg.id : agg.id.value;
   return {
-    id,
+    id: domainId,
+    domain_id: domainId,
     code: agg.code,
     name: agg.name,
     description: agg.description ?? null,

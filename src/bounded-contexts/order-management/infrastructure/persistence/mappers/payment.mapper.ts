@@ -9,7 +9,7 @@ function toNum(v: string | number): number {
 
 export function paymentOrmToDomain(orm: PaymentOrmEntity): PaymentAggregate {
   return PaymentClass.fromPersistence({
-    id: UniqueEntityId.create(orm.payment_id),
+    id: UniqueEntityId.create(orm.domain_id ?? orm.payment_id),
     orderId: orm.order_id,
     merchantId: orm.merchant_id,
     customerId: orm.customer_id,
@@ -32,9 +32,10 @@ export function paymentOrmToDomain(orm: PaymentOrmEntity): PaymentAggregate {
 }
 
 export function paymentDomainToOrm(agg: PaymentAggregate): Partial<PaymentOrmEntity> {
-  const id = typeof agg.id === 'string' ? agg.id : agg.id.value;
+  const domainId = typeof agg.id === 'string' ? agg.id : agg.id.value;
   return {
-    payment_id: id,
+    payment_id: domainId,
+    domain_id: domainId,
     order_id: agg.orderId,
     merchant_id: agg.merchantId,
     customer_id: agg.customerId,

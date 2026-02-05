@@ -16,6 +16,7 @@ describe('Order Mapper', () => {
     });
     const orm = orderDomainToOrm(aggregate);
     expect(orm.order_id).toBe(aggregate.id.value);
+    expect(orm.domain_id).toBe(aggregate.id.value);
     expect(orm.order_code).toBe('ORD-MAP');
     expect(orm.merchant_id).toBe(aggregate.merchantId);
     expect(orm.payment_status).toBe('PAID');
@@ -25,6 +26,7 @@ describe('Order Mapper', () => {
   it('orderOrmToDomain maps ORM to aggregate', () => {
     const orm: OrderOrmEntity = {
       order_id: 'uuid-1',
+      domain_id: 'uuid-1',
       merchant_id: 'm1',
       created_by: 'u1',
       order_code: 'ORD-1',
@@ -61,7 +63,7 @@ describe('Order Mapper', () => {
   it('round-trip: domain -> orm -> domain preserves key fields', () => {
     const aggregate = createOrderAggregate({ orderCode: 'ORD-RT' });
     const orm = orderDomainToOrm(aggregate);
-    const ormFull = { ...orm, created_at: aggregate.createdAt!, updated_at: aggregate.updatedAt!, items: [] } as OrderOrmEntity;
+    const ormFull = { ...orm, domain_id: aggregate.id.value, created_at: aggregate.createdAt!, updated_at: aggregate.updatedAt!, items: [] } as OrderOrmEntity;
     const back = orderOrmToDomain(ormFull);
     expect(back.id.value).toBe(aggregate.id.value);
     expect(back.orderCode).toBe(aggregate.orderCode);

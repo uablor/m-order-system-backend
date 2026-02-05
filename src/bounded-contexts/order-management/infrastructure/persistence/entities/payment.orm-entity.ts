@@ -10,6 +10,9 @@ export class PaymentOrmEntity {
   @PrimaryColumn('char', { length: 36 })
   payment_id!: string;
 
+  @Column({ type: 'char', length: 36, unique: true })
+  domain_id!: string;
+
   @Column({ type: 'char', length: 36 })
   order_id!: string;
 

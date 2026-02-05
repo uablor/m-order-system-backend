@@ -5,7 +5,7 @@ import type { UserOrmEntity } from '../entities/user.orm-entity';
 
 export function userOrmToDomain(orm: UserOrmEntity): UserAggregate {
   return UserClass.fromPersistence({
-    id: UniqueEntityId.create(orm.id),
+    id: UniqueEntityId.create(orm.domain_id ?? orm.id),
     email: orm.email,
     passwordHash: orm.password_hash,
     fullName: orm.full_name,
@@ -18,9 +18,10 @@ export function userOrmToDomain(orm: UserOrmEntity): UserAggregate {
 }
 
 export function userDomainToOrm(agg: UserAggregate): Partial<UserOrmEntity> {
-  const id = typeof agg.id === 'string' ? agg.id : agg.id.value;
+  const domainId = typeof agg.id === 'string' ? agg.id : agg.id.value;
   return {
-    id,
+    id: domainId,
+    domain_id: domainId,
     email: agg.email,
     password_hash: agg.passwordHash,
     full_name: agg.fullName,

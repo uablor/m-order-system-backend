@@ -9,7 +9,7 @@ function toNum(v: string | number): number {
 
 export function orderItemOrmToDomain(orm: OrderItemOrmEntity): OrderItemEntity {
   return OrderItemClass.create({
-    id: UniqueEntityId.create(orm.item_id),
+    id: UniqueEntityId.create(orm.domain_id ?? orm.item_id),
     orderId: orm.order_id,
     productName: orm.product_name,
     variant: orm.variant ?? '',
@@ -36,12 +36,13 @@ export function orderItemOrmToDomain(orm: OrderItemOrmEntity): OrderItemEntity {
 
 export function orderItemDomainToOrm(
   item: OrderItemEntity,
-  orderId: string,
+  orderDomainId: string,
 ): Partial<OrderItemOrmEntity> {
-  const id = typeof item.id === 'string' ? item.id : item.id.value;
+  const domainId = typeof item.id === 'string' ? item.id : item.id.value;
   return {
-    item_id: id,
-    order_id: orderId,
+    item_id: domainId,
+    domain_id: domainId,
+    order_id: orderDomainId,
     product_name: item.productName,
     variant: item.variant,
     quantity: item.quantity,

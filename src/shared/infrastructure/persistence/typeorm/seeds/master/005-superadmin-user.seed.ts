@@ -36,9 +36,11 @@ export const seed005SuperadminUser: Seed = {
     if (!adminRole) throw new Error('Admin role not found. Run 002-roles seed first.');
 
     const passwordHash = await bcrypt.hash(SUPERADMIN_PASSWORD, BCRYPT_ROUNDS);
+    const userDomainId = uuid();
     await userRepo.save(
       userRepo.create({
-        id: uuid(),
+        id: userDomainId,
+        domain_id: userDomainId,
         email: SUPERADMIN_EMAIL,
         password_hash: passwordHash,
         full_name: SUPERADMIN_FULL_NAME,

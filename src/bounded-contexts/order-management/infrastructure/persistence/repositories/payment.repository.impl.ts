@@ -20,13 +20,15 @@ export class PaymentRepositoryImpl implements IPaymentRepository {
     const orm = this.repo.create(
       paymentDomainToOrm(aggregate) as Partial<PaymentOrmEntity>,
     );
-    orm.payment_id = aggregate.id.value;
+    const domainId = aggregate.id.value;
+    orm.payment_id = domainId;
+    orm.domain_id = domainId;
     const saved = await this.repo.save(orm);
     return paymentOrmToDomain(saved);
   }
 
-  async findById(id: string): Promise<PaymentAggregate | null> {
-    const orm = await this.repo.findOne({ where: { payment_id: id } });
+  async findById(domainId: string): Promise<PaymentAggregate | null> {
+    const orm = await this.repo.findOne({ where: { domain_id: domainId } });
     return orm ? paymentOrmToDomain(orm) : null;
   }
 

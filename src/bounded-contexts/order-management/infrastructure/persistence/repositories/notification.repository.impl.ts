@@ -23,13 +23,15 @@ export class NotificationRepositoryImpl implements INotificationRepository {
     const orm = this.repo.create(
       notificationDomainToOrm(aggregate) as Partial<NotificationOrmEntity>,
     );
-    orm.notification_id = aggregate.id.value;
+    const domainId = aggregate.id.value;
+    orm.notification_id = domainId;
+    orm.domain_id = domainId;
     const saved = await this.repo.save(orm);
     return notificationOrmToDomain(saved);
   }
 
-  async findById(id: string): Promise<NotificationAggregate | null> {
-    const orm = await this.repo.findOne({ where: { notification_id: id } });
+  async findById(domainId: string): Promise<NotificationAggregate | null> {
+    const orm = await this.repo.findOne({ where: { domain_id: domainId } });
     return orm ? notificationOrmToDomain(orm) : null;
   }
 

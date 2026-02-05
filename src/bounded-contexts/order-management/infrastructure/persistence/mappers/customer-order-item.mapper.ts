@@ -11,7 +11,7 @@ export function customerOrderItemOrmToDomain(
   orm: CustomerOrderItemOrmEntity,
 ): CustomerOrderItemEntity {
   return CustomerOrderItemClass.create({
-    id: UniqueEntityId.create(orm.id),
+    id: UniqueEntityId.create(orm.domain_id ?? orm.id),
     customerOrderId: orm.customer_order_id,
     orderItemId: orm.order_item_id,
     quantity: orm.quantity,
@@ -27,9 +27,10 @@ export function customerOrderItemDomainToOrm(
   item: CustomerOrderItemEntity,
   customerOrderId: string,
 ): Partial<CustomerOrderItemOrmEntity> {
-  const id = typeof item.id === 'string' ? item.id : item.id.value;
+  const domainId = typeof item.id === 'string' ? item.id : item.id.value;
   return {
-    id,
+    id: domainId,
+    domain_id: domainId,
     customer_order_id: customerOrderId,
     order_item_id: item.orderItemId,
     quantity: item.quantity,

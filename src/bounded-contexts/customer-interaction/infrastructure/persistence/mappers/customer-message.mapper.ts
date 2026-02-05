@@ -7,7 +7,7 @@ export function customerMessageOrmToDomain(
   orm: CustomerMessageOrmEntity,
 ): CustomerMessageAggregate {
   return CustomerMessageClass.fromPersistence({
-    id: UniqueEntityId.create(orm.message_id),
+    id: UniqueEntityId.create(orm.domain_id ?? orm.message_id),
     customerId: orm.customer_id,
     merchantId: orm.merchant_id,
     orderId: orm.order_id ?? undefined,
@@ -24,9 +24,10 @@ export function customerMessageOrmToDomain(
 export function customerMessageDomainToOrm(
   agg: CustomerMessageAggregate,
 ): Partial<CustomerMessageOrmEntity> {
-  const id = typeof agg.id === 'string' ? agg.id : agg.id.value;
+  const domainId = typeof agg.id === 'string' ? agg.id : agg.id.value;
   return {
-    message_id: id,
+    message_id: domainId,
+    domain_id: domainId,
     customer_id: agg.customerId,
     merchant_id: agg.merchantId,
     order_id: agg.orderId ?? null,

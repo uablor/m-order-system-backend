@@ -13,6 +13,9 @@ export class CustomerOrderOrmEntity {
   @PrimaryColumn('char', { length: 36 })
   customer_order_id!: string;
 
+  @Column({ type: 'char', length: 36, unique: true })
+  domain_id!: string;
+
   @Column({ type: 'char', length: 36 })
   order_id!: string;
 

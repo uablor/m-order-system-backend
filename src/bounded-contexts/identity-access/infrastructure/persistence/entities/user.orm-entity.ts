@@ -11,6 +11,10 @@ export class UserOrmEntity {
   @PrimaryColumn('char', { length: 36 })
   id!: string;
 
+  /** Domain identity (UUID). Domain layer uses this only. */
+  @Column({ type: 'char', length: 36, unique: true })
+  domain_id!: string;
+
   @Column({ type: 'varchar', length: 255, unique: true })
   email!: string;
 

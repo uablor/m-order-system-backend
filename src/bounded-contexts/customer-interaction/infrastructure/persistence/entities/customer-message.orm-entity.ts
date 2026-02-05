@@ -10,6 +10,9 @@ export class CustomerMessageOrmEntity {
   @PrimaryColumn('char', { length: 36 })
   message_id!: string;
 
+  @Column({ type: 'char', length: 36, unique: true })
+  domain_id!: string;
+
   @Column({ type: 'char', length: 36 })
   customer_id!: string;
 

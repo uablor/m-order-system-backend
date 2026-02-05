@@ -11,7 +11,7 @@ function toNum(v: string | number): number {
 export function orderOrmToDomain(orm: OrderOrmEntity): OrderAggregate {
   const items = (orm.items ?? []).map(orderItemOrmToDomain);
   return OrderClass.fromPersistence({
-    id: UniqueEntityId.create(orm.order_id),
+    id: UniqueEntityId.create(orm.domain_id ?? orm.order_id),
     merchantId: orm.merchant_id,
     createdBy: orm.created_by,
     orderCode: orm.order_code,
@@ -41,9 +41,10 @@ export function orderOrmToDomain(orm: OrderOrmEntity): OrderAggregate {
 }
 
 export function orderDomainToOrm(agg: OrderAggregate): Partial<OrderOrmEntity> {
-  const id = typeof agg.id === 'string' ? agg.id : agg.id.value;
+  const domainId = typeof agg.id === 'string' ? agg.id : agg.id.value;
   return {
-    order_id: id,
+    order_id: domainId,
+    domain_id: domainId,
     merchant_id: agg.merchantId,
     created_by: agg.createdBy,
     order_code: agg.orderCode,

@@ -15,6 +15,9 @@ export class ExchangeRateOrmEntity {
   @PrimaryColumn('char', { length: 36 })
   rate_id!: string;
 
+  @Column({ type: 'char', length: 36, unique: true })
+  domain_id!: string;
+
   @Column({ type: 'char', length: 36 })
   merchant_id!: string;
 

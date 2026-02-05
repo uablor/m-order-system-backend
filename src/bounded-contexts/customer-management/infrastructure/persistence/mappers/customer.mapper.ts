@@ -5,7 +5,7 @@ import type { CustomerOrmEntity } from '../entities/customer.orm-entity';
 
 export function customerOrmToDomain(orm: CustomerOrmEntity): CustomerAggregate {
   return CustomerClass.fromPersistence({
-    id: UniqueEntityId.create(orm.id),
+    id: UniqueEntityId.create(orm.domain_id ?? orm.id),
     merchantId: orm.merchant_id,
     token: orm.token,
     fullName: orm.full_name,
@@ -17,9 +17,10 @@ export function customerOrmToDomain(orm: CustomerOrmEntity): CustomerAggregate {
 }
 
 export function customerDomainToOrm(agg: CustomerAggregate): Partial<CustomerOrmEntity> {
-  const id = typeof agg.id === 'string' ? agg.id : agg.id.value;
+  const domainId = typeof agg.id === 'string' ? agg.id : agg.id.value;
   return {
-    id,
+    id: domainId,
+    domain_id: domainId,
     merchant_id: agg.merchantId,
     token: agg.token,
     full_name: agg.fullName,

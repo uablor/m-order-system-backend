@@ -11,6 +11,9 @@ export class RoleOrmEntity {
   @PrimaryColumn('char', { length: 36 })
   id!: string;
 
+  @Column({ type: 'char', length: 36, unique: true })
+  domain_id!: string;
+
   @Column({ type: 'varchar', length: 100 })
   name!: string;
 

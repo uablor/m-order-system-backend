@@ -22,8 +22,10 @@ export const seed002Roles: Seed = {
       where: { name: r.name, merchant_id: r.merchantId ?? IsNull() },
     });
       if (!existing) {
+        const domainId = uuid();
         const entity = repo.create({
-          id: uuid(),
+          id: domainId,
+          domain_id: domainId,
           name: r.name,
           merchant_id: r.merchantId,
         });

@@ -7,7 +7,7 @@ import { arrivalItemOrmToDomain } from './arrival-item.mapper';
 export function arrivalOrmToDomain(orm: ArrivalOrmEntity): ArrivalAggregate {
   const items = (orm.items ?? []).map(arrivalItemOrmToDomain);
   return ArrivalClass.fromPersistence({
-    id: UniqueEntityId.create(orm.arrival_id),
+    id: UniqueEntityId.create(orm.domain_id ?? orm.arrival_id),
     orderId: orm.order_id,
     merchantId: orm.merchant_id,
     arrivedDate: orm.arrived_date instanceof Date ? orm.arrived_date : new Date(orm.arrived_date),
@@ -22,9 +22,10 @@ export function arrivalOrmToDomain(orm: ArrivalOrmEntity): ArrivalAggregate {
 }
 
 export function arrivalDomainToOrm(agg: ArrivalAggregate): Partial<ArrivalOrmEntity> {
-  const id = typeof agg.id === 'string' ? agg.id : agg.id.value;
+  const domainId = typeof agg.id === 'string' ? agg.id : agg.id.value;
   return {
-    arrival_id: id,
+    arrival_id: domainId,
+    domain_id: domainId,
     order_id: agg.orderId,
     merchant_id: agg.merchantId,
     arrived_date: agg.arrivedDate,

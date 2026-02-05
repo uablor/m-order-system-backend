@@ -19,9 +19,11 @@ export const seed004Merchant: Seed = {
       where: { shop_name: MAIN_MERCHANT.shopName },
     });
     if (!existing) {
+      const domainId = uuid();
       await repo.save(
         repo.create({
-          id: uuid(),
+          id: domainId,
+          domain_id: domainId,
           shop_name: MAIN_MERCHANT.shopName,
           default_currency: MAIN_MERCHANT.defaultCurrency,
           is_active: true,

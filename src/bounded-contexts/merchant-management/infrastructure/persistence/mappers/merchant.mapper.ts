@@ -5,7 +5,7 @@ import type { MerchantOrmEntity } from '../entities/merchant.orm-entity';
 
 export function merchantOrmToDomain(orm: MerchantOrmEntity): MerchantAggregate {
   return MerchantClass.fromPersistence({
-    id: UniqueEntityId.create(orm.id),
+    id: UniqueEntityId.create(orm.domain_id ?? orm.id),
     shopName: orm.shop_name,
     defaultCurrency: orm.default_currency,
     isActive: orm.is_active,
@@ -16,9 +16,10 @@ export function merchantOrmToDomain(orm: MerchantOrmEntity): MerchantAggregate {
 }
 
 export function merchantDomainToOrm(agg: MerchantAggregate): Partial<MerchantOrmEntity> {
-  const id = typeof agg.id === 'string' ? agg.id : agg.id.value;
+  const domainId = typeof agg.id === 'string' ? agg.id : agg.id.value;
   return {
-    id,
+    id: domainId,
+    domain_id: domainId,
     shop_name: agg.shopName,
     default_currency: agg.defaultCurrency,
     is_active: agg.isActive,

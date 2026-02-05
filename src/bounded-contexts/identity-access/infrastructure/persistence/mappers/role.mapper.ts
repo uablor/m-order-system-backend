@@ -5,7 +5,7 @@ import type { RoleOrmEntity } from '../entities/role.orm-entity';
 
 export function roleOrmToDomain(orm: RoleOrmEntity, permissionIds: string[]): RoleAggregate {
   return RoleClass.fromPersistence({
-    id: UniqueEntityId.create(orm.id),
+    id: UniqueEntityId.create(orm.domain_id ?? orm.id),
     name: orm.name,
     merchantId: orm.merchant_id,
     permissionIds,
@@ -15,9 +15,10 @@ export function roleOrmToDomain(orm: RoleOrmEntity, permissionIds: string[]): Ro
 }
 
 export function roleDomainToOrm(agg: RoleAggregate): Partial<RoleOrmEntity> {
-  const id = typeof agg.id === 'string' ? agg.id : agg.id.value;
+  const domainId = typeof agg.id === 'string' ? agg.id : agg.id.value;
   return {
-    id,
+    id: domainId,
+    domain_id: domainId,
     name: agg.name,
     merchant_id: agg.merchantId,
     updated_at: agg.updatedAt ?? new Date(),

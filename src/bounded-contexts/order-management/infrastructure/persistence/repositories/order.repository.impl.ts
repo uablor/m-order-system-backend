@@ -21,40 +21,42 @@ export class OrderRepositoryImpl implements IOrderRepository {
   ) {}
 
   async save(aggregate: OrderAggregate): Promise<OrderAggregate> {
-    const orderId = aggregate.id.value;
+    const domainId = aggregate.id.value;
     const ormOrder = this.orderRepo.create(
       orderDomainToOrm(aggregate) as Partial<OrderOrmEntity>,
     );
-    ormOrder.order_id = orderId;
+    ormOrder.order_id = domainId;
+    ormOrder.domain_id = domainId;
     await this.orderRepo.save(ormOrder);
 
     const existingIds = (
-      await this.itemRepo.find({ where: { order_id: orderId }, select: ['item_id'] })
+      await this.itemRepo.find({ where: { order_id: domainId }, select: ['item_id'] })
     ).map((r) => r.item_id);
     const currentIds = aggregate.items.map((i) =>
       typeof i.id === 'string' ? i.id : i.id.value,
     );
     for (const item of aggregate.items) {
-      const itemId = typeof item.id === 'string' ? item.id : item.id.value;
+      const itemDomainId = typeof item.id === 'string' ? item.id : item.id.value;
       const ormItem = this.itemRepo.create(
-        orderItemDomainToOrm(item, orderId) as Partial<OrderItemOrmEntity>,
+        orderItemDomainToOrm(item, domainId) as Partial<OrderItemOrmEntity>,
       );
-      ormItem.item_id = itemId;
-      ormItem.order_id = orderId;
+      ormItem.item_id = itemDomainId;
+      ormItem.domain_id = itemDomainId;
+      ormItem.order_id = domainId;
       await this.itemRepo.save(ormItem);
     }
     for (const id of existingIds) {
       if (!currentIds.includes(id)) await this.itemRepo.delete(id);
     }
 
-    return this.findById(orderId) as Promise<OrderAggregate>;
+    return this.findById(domainId) as Promise<OrderAggregate>;
   }
 
-  async findById(id: string, merchantId?: string): Promise<OrderAggregate | null> {
+  async findById(domainId: string, merchantId?: string): Promise<OrderAggregate | null> {
     const qb = this.orderRepo
       .createQueryBuilder('o')
       .leftJoinAndSelect('o.items', 'items')
-      .where('o.order_id = :id', { id });
+      .where('o.domain_id = :domainId', { domainId });
     if (merchantId) qb.andWhere('o.merchant_id = :merchantId', { merchantId });
     const orm = await qb.getOne();
     return orm ? orderOrmToDomain(orm) : null;
@@ -93,8 +95,8 @@ export class OrderRepositoryImpl implements IOrderRepository {
     return { data: list.map(orderOrmToDomain), total };
   }
 
-  async delete(id: string): Promise<void> {
-    await this.itemRepo.delete({ order_id: id });
-    await this.orderRepo.delete(id);
+  async delete(domainId: string): Promise<void> {
+    await this.itemRepo.delete({ order_id: domainId });
+    await this.orderRepo.delete({ domain_id: domainId });
   }
 }

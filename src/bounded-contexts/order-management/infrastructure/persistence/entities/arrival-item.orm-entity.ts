@@ -13,6 +13,9 @@ export class ArrivalItemOrmEntity {
   @PrimaryColumn('char', { length: 36 })
   arrival_item_id!: string;
 
+  @Column({ type: 'char', length: 36, unique: true })
+  domain_id!: string;
+
   @Column({ type: 'char', length: 36 })
   arrival_id!: string;
 

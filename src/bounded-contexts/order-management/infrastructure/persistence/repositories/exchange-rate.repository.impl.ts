@@ -24,13 +24,15 @@ export class ExchangeRateRepositoryImpl implements IExchangeRateRepository {
     const orm = this.repo.create(
       exchangeRateDomainToOrm(aggregate) as Partial<ExchangeRateOrmEntity>,
     );
-    orm.rate_id = aggregate.id.value;
+    const domainId = aggregate.id.value;
+    orm.rate_id = domainId;
+    orm.domain_id = domainId;
     const saved = await this.repo.save(orm);
     return exchangeRateOrmToDomain(saved);
   }
 
-  async findById(id: string): Promise<ExchangeRateAggregate | null> {
-    const orm = await this.repo.findOne({ where: { rate_id: id } });
+  async findById(domainId: string): Promise<ExchangeRateAggregate | null> {
+    const orm = await this.repo.findOne({ where: { domain_id: domainId } });
     return orm ? exchangeRateOrmToDomain(orm) : null;
   }
 

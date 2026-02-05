@@ -5,7 +5,7 @@ import type { NotificationOrmEntity } from '../entities/notification.orm-entity'
 
 export function notificationOrmToDomain(orm: NotificationOrmEntity): NotificationAggregate {
   return NotificationClass.fromPersistence({
-    id: UniqueEntityId.create(orm.notification_id),
+    id: UniqueEntityId.create(orm.domain_id ?? orm.notification_id),
     merchantId: orm.merchant_id,
     customerId: orm.customer_id,
     notificationType: orm.notification_type as 'ARRIVAL' | 'PAYMENT' | 'REMINDER',
@@ -27,9 +27,10 @@ export function notificationOrmToDomain(orm: NotificationOrmEntity): Notificatio
 export function notificationDomainToOrm(
   agg: NotificationAggregate,
 ): Partial<NotificationOrmEntity> {
-  const id = typeof agg.id === 'string' ? agg.id : agg.id.value;
+  const domainId = typeof agg.id === 'string' ? agg.id : agg.id.value;
   return {
-    notification_id: id,
+    notification_id: domainId,
+    domain_id: domainId,
     merchant_id: agg.merchantId,
     customer_id: agg.customerId,
     notification_type: agg.notificationType,

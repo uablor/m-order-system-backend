@@ -10,8 +10,13 @@ import { OrderItemOrmEntity } from './order-item.orm-entity';
 
 @Entity('orders', { engine: 'InnoDB' })
 export class OrderOrmEntity {
+  /** Technical PK (kept for FK). Use domain_id for business identity. */
   @PrimaryColumn('char', { length: 36 })
   order_id!: string;
+
+  /** Domain identity (UUID). Domain layer uses this only. */
+  @Column({ type: 'char', length: 36, unique: true })
+  domain_id!: string;
 
   @Column({ type: 'char', length: 36 })
   merchant_id!: string;

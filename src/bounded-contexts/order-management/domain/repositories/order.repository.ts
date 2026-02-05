@@ -12,8 +12,10 @@ export interface OrderRepositoryFindManyParams {
 
 export interface IOrderRepository {
   save(aggregate: OrderAggregate): Promise<OrderAggregate>;
-  findById(id: string, merchantId?: string): Promise<OrderAggregate | null>;
+  /** @param domainId - Business identity (UUID). Never DB technical id. */
+  findById(domainId: string, merchantId?: string): Promise<OrderAggregate | null>;
   findByOrderCode(orderCode: string, merchantId: string): Promise<OrderAggregate | null>;
   findMany(params: OrderRepositoryFindManyParams): Promise<{ data: OrderAggregate[]; total: number }>;
-  delete(id: string): Promise<void>;
+  /** @param domainId - Business identity (UUID). */
+  delete(domainId: string): Promise<void>;
 }

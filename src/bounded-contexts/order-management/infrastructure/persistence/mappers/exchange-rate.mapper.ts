@@ -5,7 +5,7 @@ import type { ExchangeRateOrmEntity } from '../entities/exchange-rate.orm-entity
 
 export function exchangeRateOrmToDomain(orm: ExchangeRateOrmEntity): ExchangeRateAggregate {
   return ExchangeRateClass.fromPersistence({
-    id: UniqueEntityId.create(orm.rate_id),
+    id: UniqueEntityId.create(orm.domain_id ?? orm.rate_id),
     merchantId: orm.merchant_id,
     baseCurrency: orm.base_currency,
     targetCurrency: orm.target_currency,
@@ -22,9 +22,10 @@ export function exchangeRateOrmToDomain(orm: ExchangeRateOrmEntity): ExchangeRat
 export function exchangeRateDomainToOrm(
   agg: ExchangeRateAggregate,
 ): Partial<ExchangeRateOrmEntity> {
-  const id = typeof agg.id === 'string' ? agg.id : agg.id.value;
+  const domainId = typeof agg.id === 'string' ? agg.id : agg.id.value;
   return {
-    rate_id: id,
+    rate_id: domainId,
+    domain_id: domainId,
     merchant_id: agg.merchantId,
     base_currency: agg.baseCurrency,
     target_currency: agg.targetCurrency,
