@@ -13,15 +13,17 @@
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:cov": "jest --coverage",
+    "test": "pnpm exec jest",
+    "test:watch": "pnpm exec jest --watch",
+    "test:cov": "pnpm exec jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json",
-    "migration:generate": "typeorm-ts-node-commonjs migration:generate src/shared/infrastructure/persistence/typeorm/migrations/SchemaSync -d src/shared/infrastructure/persistence/typeorm/data-source.ts",
-    "migration:run": "typeorm-ts-node-commonjs migration:run -d src/shared/infrastructure/persistence/typeorm/data-source.ts",
-    "seed": "ts-node -r tsconfig-paths/register src/shared/infrastructure/persistence/typeorm/seeds/seed.ts",
-    "db:setup": "pnpm migration:run && pnpm seed"
+    "test:e2e": "pnpm exec jest --config ./test/jest-e2e.json",
+    "db:migration:generate": "pnpm exec typeorm-ts-node-commonjs migration:generate src/shared/infrastructure/persistence/typeorm/migrations/SchemaSync -d src/shared/infrastructure/persistence/typeorm/data-source.ts",
+    "db:migration:run": "pnpm exec typeorm-ts-node-commonjs migration:run -d src/shared/infrastructure/persistence/typeorm/data-source.ts",
+    "db:migration:revert": "pnpm exec typeorm-ts-node-commonjs migration:revert -d src/shared/infrastructure/persistence/typeorm/data-source.ts",
+    "db:seed": "pnpm exec ts-node -r tsconfig-paths/register src/shared/infrastructure/persistence/typeorm/seeds/run.ts",
+    "db:seed:run": "pnpm exec ts-node -r tsconfig-paths/register src/shared/infrastructure/persistence/typeorm/seeds/run.ts",
+    "db:setup": "pnpm db:migration:run && pnpm db:seed"
   },
   "dependencies": {
     "dotenv": "^16.4.5",
@@ -75,22 +77,5 @@
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.7.3",
     "typescript-eslint": "^8.20.0"
-  },
-  "jest": {
-    "moduleFileExtensions": [
-      "js",
-      "json",
-      "ts"
-    ],
-    "rootDir": "src",
-    "testRegex": ".*\\.spec\\.ts$",
-    "transform": {
-      "^.+\\.(t|j)s$": "ts-jest"
-    },
-    "collectCoverageFrom": [
-      "**/*.(t|j)s"
-    ],
-    "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
   }
 }

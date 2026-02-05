@@ -67,55 +67,48 @@ Copy `.env.example` to `.env`. Set **MySQL** (DB_HOST, DB_USER, DB_PASS, DB_NAME
 
 ### Migrations and seeding (DDD-compliant)
 
-- **Migrations** live under `src/infrastructure/database/migrations/`. Schema only; no business logic. MySQL, InnoDB, snake_case, `domain_id` (char 36), `technical_id` (BIGINT auto-increment).
-- **Seeder** uses **Application-layer UseCases only** (no ORM entities, no repository impl, no raw SQL). It runs inside a single transaction and is idempotent.
+- **Migrations** live under `src/shared/infrastructure/persistence/typeorm/migrations/`. Schema only; no business logic. Use the standalone **DataSource** at `src/shared/infrastructure/persistence/typeorm/data-source.ts` (no NestJS; env + `config/orm-entities`).
+- **Seeds** are **master data only** (roles, permissions, role-permissions). No transactional data (no users, orders, payments). Seeds live under `src/shared/infrastructure/persistence/typeorm/seeds/`, run in a single transaction, and are idempotent. All commands use **pnpm exec**.
 
 **CLI commands:**
 
 | Script | Description |
 |--------|-------------|
-| `pnpm run make:migration name=MyMigrationName` | Create a new migration file |
-| `pnpm run make:migrate` | Run pending migrations (TypeORM + data-source.ts) |
-| `pnpm run make:rollback` | Revert the last migration |
-| `pnpm run make:seed` | Run DDD seed (permissions → role → assign permissions → merchant → superadmin user) |
-| `pnpm run seed:run` | Build, run migrations, then seed |
+| `pnpm db:migration:generate` | Generate migration from entity diff (output: `migrations/SchemaSync-<timestamp>.ts`) |
+| `pnpm db:migration:run` | Run pending migrations |
+| `pnpm db:migration:revert` | Revert the last migration |
+| `pnpm db:seed` | Run all master-data seeds (permissions → roles → role-permissions) |
+| `pnpm db:seed 001-permissions` | Run a specific seed by name |
+| `pnpm db:setup` | Run migrations then seeds |
 
 **How to run:**
 
 ```bash
-# Create a new migration (replace MyMigrationName with your migration name)
-pnpm run make:migration --name=MyMigrationName
-# or: npm run make:migration name=init
+# Generate migration (after entity changes)
+pnpm db:migration:generate
 
 # Run pending migrations
-pnpm run make:migrate
-# or: npm run make:migrate
+pnpm db:migration:run
 
 # Revert last migration
-pnpm run make:rollback
-# or: npm run make:rollback
+pnpm db:migration:revert
 
-# Seed (permissions → ADMIN role → assign permissions → Main Merchant → superadmin user)
-pnpm run make:seed
-# or: npm run make:seed
+# Seed master data (roles, permissions, role-permissions)
+pnpm db:seed
+
+# Run only permissions seed
+pnpm db:seed 001-permissions
 ```
 
 **Typical flow (first time):**
 
 ```bash
 cp .env.example .env
-# Edit .env with your MySQL and JWT values
+# Edit .env with DB_HOST, DB_USER, DB_PASS, DB_NAME
 pnpm install
-pnpm run make:migrate
-pnpm run make:seed
+pnpm db:migration:run
+pnpm db:seed
 ```
-
-**After seed, you can log in:**
-
-- Email: `superadmin@gmail.com`
-- Password: `superadmin`
-- Role: ADMIN with permissions (FULL_ACCESS, MANAGE_USERS, MANAGE_CUSTOMERS, MANAGE_ORDERS, MANAGE_PAYMENTS, MANAGE_ARRIVALS, MANAGE_NOTIFICATIONS, MANAGE_EXCHANGE_RATE)
-- Merchant: Main Merchant (owner: Super Admin)
 
 ## Project setup
 
