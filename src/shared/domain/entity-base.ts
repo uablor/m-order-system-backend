@@ -1,4 +1,4 @@
-import { UniqueEntityId } from "./value-objects";
+import { UniqueEntityId } from './value-objects';
 
 export interface EntityProps {
   id: UniqueEntityId;
@@ -28,6 +28,6 @@ export abstract class Entity<T extends EntityProps> {
   equals(entity?: Entity<T>): boolean {
     if (entity === null || entity === undefined) return false;
     if (this === entity) return true;
-    return this.id === entity.id;
+    return this.id.equals(entity.id);
   }
 }

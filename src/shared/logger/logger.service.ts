@@ -1,20 +1,22 @@
-import { Injectable, LoggerService as NestLoggerService } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 
 @Injectable()
-export class LoggerService implements NestLoggerService {
-  log(message: string, ...optionalParams: unknown[]) {
-    console.log(message, ...optionalParams);
+export class LoggerService {
+  log(message: string, ...args: unknown[]) {
+    console.log(`[LOG] ${message}`, ...args);
   }
-  error(message: string, ...optionalParams: unknown[]) {
-    console.error(message, ...optionalParams);
+
+  error(message: string, ...args: unknown[]) {
+    console.error(`[ERROR] ${message}`, ...args);
   }
-  warn(message: string, ...optionalParams: unknown[]) {
-    console.warn(message, ...optionalParams);
+
+  warn(message: string, ...args: unknown[]) {
+    console.warn(`[WARN] ${message}`, ...args);
   }
-  debug?(message: string, ...optionalParams: unknown[]) {
-    console.debug(message, ...optionalParams);
-  }
-  verbose?(message: string, ...optionalParams: unknown[]) {
-    console.log(message, ...optionalParams);
+
+  debug(message: string, ...args: unknown[]) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.debug(`[DEBUG] ${message}`, ...args);
+    }
   }
 }

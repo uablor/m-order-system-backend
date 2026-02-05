@@ -9,10 +9,8 @@ export default registerAs('database', () => ({
   password: process.env.DB_PASS ?? '',
   database: process.env.DB_NAME ?? 'm_order_system',
   entities: ormEntities,
-  synchronize: false,
-  migrations: [
-    'dist/shared/infrastructure/persistence/typeorm/migrations/*.js',
-  ],
+  synchronize: process.env.DB_SYNC === 'true',
+  migrations: ['dist/shared/infrastructure/persistence/typeorm/migrations/*.js'],
   logging: process.env.DB_LOGGING !== 'false',
   charset: 'utf8mb4',
   timezone: 'Z',

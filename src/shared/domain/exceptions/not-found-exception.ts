@@ -1,10 +1,8 @@
-export class NotFoundException extends Error {
-  constructor(
-    message: string,
-    public readonly code?: string,
-  ) {
-    super(message);
+import { DomainException } from './domain-exception';
+
+export class NotFoundException extends DomainException {
+  constructor(message: string, code = 'NOT_FOUND') {
+    super(message, code);
     this.name = 'NotFoundException';
-    Object.setPrototypeOf(this, NotFoundException.prototype);
   }
 }

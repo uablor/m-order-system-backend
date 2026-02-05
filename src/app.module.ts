@@ -8,9 +8,10 @@ import { AppService } from './app.service';
 import config from './config';
 import { LoggerModule } from './shared/logger';
 import { AuthMiddleware } from './shared/middleware/auth.middleware';
-import { UserManagementModule } from './bounded-contexts/user-management/user-management.module';
-import { OrderManagementModule } from './bounded-contexts/order-management/order-management.module';
-import { JwtAuthGuard } from './bounded-contexts/user-management/infrastructure/external-services/jwt-auth.guard';
+import { IdentityAccessModule } from './bounded-contexts/identity-access/identity-access.module';
+import { MerchantManagementModule } from './bounded-contexts/merchant-management/merchant-management.module';
+import { CustomerManagementModule } from './bounded-contexts/customer-management/customer-management.module';
+import { JwtAuthGuard } from './bounded-contexts/identity-access/infrastructure/external-services/jwt-auth.guard';
 import { ThrottlerGuard } from '@nestjs/throttler';
 
 @Module({
@@ -33,8 +34,9 @@ import { ThrottlerGuard } from '@nestjs/throttler';
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => configService.get('database') ?? {},
     }),
-    UserManagementModule,
-    OrderManagementModule,
+    IdentityAccessModule,
+    MerchantManagementModule,
+    CustomerManagementModule,
   ],
   controllers: [AppController],
   providers: [

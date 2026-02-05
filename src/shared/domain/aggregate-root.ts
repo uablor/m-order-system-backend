@@ -1,14 +1,9 @@
-import { EntityProps } from "./entity-base";
-import { UniqueEntityId } from "./value-objects";
-
-/**
- * Base interface for domain entities.
- */
-
+import { EntityProps } from './entity-base';
+import { UniqueEntityId } from './value-objects';
 
 export abstract class AggregateRoot<T extends EntityProps> {
   protected readonly props: T;
-  private _domainEvents: any[] = [];
+  private _domainEvents: unknown[] = [];
 
   protected constructor(props: T) {
     this.props = props;
@@ -26,21 +21,21 @@ export abstract class AggregateRoot<T extends EntityProps> {
     return this.props.updatedAt;
   }
 
-  public get domainEvents(): any[] {
+  get domainEvents(): unknown[] {
     return this._domainEvents;
   }
 
-  protected addDomainEvent(event: any): void {
+  protected addDomainEvent(event: unknown): void {
     this._domainEvents.push(event);
   }
 
-  public clearEvents(): void {
+  clearEvents(): void {
     this._domainEvents = [];
   }
 
-  public equals(entity?: AggregateRoot<T>): boolean {
+  equals(entity?: AggregateRoot<T>): boolean {
     if (entity === null || entity === undefined) return false;
     if (this === entity) return true;
-    return this.id === entity.id;
+    return this.id.equals(entity.id);
   }
 }

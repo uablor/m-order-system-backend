@@ -2,63 +2,53 @@ import {
   ExceptionFilter,
   Catch,
   ArgumentsHost,
-  HttpException,
   HttpStatus,
   Logger,
 } from '@nestjs/common';
-import { Request, Response } from 'express';
+import { Response } from 'express';
+import { DomainException, NotFoundException } from '../domain/exceptions';
 
-export interface ErrorResponse {
-  success: false;
-  message: string;
-  statusCode: number;
-  requestId?: string;
-  error?: string;
-}
-
-/**
- * Global exception filter. Returns consistent format: success, message, statusCode, requestId.
- * SECURITY: Never sends stack trace or internal details to the client; only message and error name.
- */
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
   private readonly logger = new Logger(GlobalExceptionFilter.name);
 
   catch(exception: unknown, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
-    const response = ctx.getResponse<Response>();
-    const request = ctx.getRequest<Request & { requestId?: string }>();
-    const requestId = request.requestId;
+    const res = ctx.getResponse<Response>();
 
-    let status = HttpStatus.INTERNAL_SERVER_ERROR;
-    let message = 'Internal server error';
-    let error: string | undefined;
-
-    if (exception instanceof HttpException) {
-      status = exception.getStatus();
-      const res = exception.getResponse();
-      if (typeof res === 'object' && res !== null && 'message' in res) {
-        const msg = (res as { message?: string | string[] }).message;
-        message = Array.isArray(msg) ? (msg[0] ?? message) : (msg ?? message);
-      } else {
-        message = exception.message;
-      }
-      error = exception.name;
-    } else if (exception instanceof Error) {
-      message = exception.message;
-      error = exception.name;
-      this.logger.error(exception.message, exception.stack);
+    if (exception instanceof NotFoundException) {
+      res.status(HttpStatus.NOT_FOUND).json({
+        statusCode: HttpStatus.NOT_FOUND,
+        message: exception.message,
+        code: exception.code,
+      });
+      return;
+    }
+    if (exception instanceof DomainException) {
+      const status = HttpStatus.BAD_REQUEST;
+      res.status(status).json({
+        statusCode: status,
+        message: exception.message,
+        code: exception.code,
+      });
+      return;
     }
 
-    // Never include stack or internal details in response (security)
-    const body: ErrorResponse = {
-      success: false,
-      message,
-      statusCode: status,
-      requestId,
-      error,
-    };
+    if (exception && typeof exception === 'object' && 'getStatus' in exception) {
+      const httpException = exception as unknown as {
+        getStatus: () => number;
+        getResponse?: () => unknown;
+      };
+      const status = httpException.getStatus();
+      const response = httpException.getResponse?.();
+      res.status(status).json(response ?? { message: 'Unknown error' });
+      return;
+    }
 
-    response.status(status).json(body);
+    this.logger.error(exception);
+    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+      statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+      message: 'Internal server error',
+    });
   }
 }

@@ -1,7 +1,7 @@
 import { Controller, Get } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AppService } from './app.service';
-import { Public } from './bounded-contexts/user-management/application/decorators/public.decorator';
+import { Public } from './bounded-contexts/identity-access/application/decorators/public.decorator';
 
 @ApiTags('App')
 @Controller()
