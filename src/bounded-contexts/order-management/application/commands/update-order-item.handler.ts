@@ -1,15 +1,20 @@
-import { Inject, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, NotFoundException } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UpdateOrderItemCommand } from './update-order-item.command';
 import { ORDER_REPOSITORY, type IOrderRepository } from '../../domain/repositories/order.repository';
+import {
+  CUSTOMER_ORDER_REPOSITORY,
+  type ICustomerOrderRepository,
+} from '../../domain/repositories/customer-order.repository';
 import { OrderItemEntity } from '../../domain/entities/order-item.entity';
-import { UniqueEntityId } from '../../../../shared/domain/value-objects';
 
 @CommandHandler(UpdateOrderItemCommand)
 export class UpdateOrderItemHandler implements ICommandHandler<UpdateOrderItemCommand> {
   constructor(
     @Inject(ORDER_REPOSITORY)
     private readonly repo: IOrderRepository,
+    @Inject(CUSTOMER_ORDER_REPOSITORY)
+    private readonly coRepo: ICustomerOrderRepository,
   ) {}
 
   async execute(command: UpdateOrderItemCommand): Promise<void> {
@@ -23,22 +28,21 @@ export class UpdateOrderItemHandler implements ICommandHandler<UpdateOrderItemCo
     const productName = p.productName ?? existing.productName;
     const variant = p.variant ?? existing.variant;
     const quantity = p.quantity ?? existing.quantity;
+    if (p.quantity != null && p.quantity !== existing.quantity) {
+      const allocated = await this.coRepo.sumAllocatedQuantityForOrderItem(command.itemId);
+      if (p.quantity < allocated) {
+        throw new BadRequestException(
+          `Cannot reduce order item quantity below allocated quantity (${allocated})`,
+        );
+      }
+    }
     const purchasePrice = p.purchasePrice ?? existing.purchasePrice;
     const purchaseExchangeRate = p.purchaseExchangeRate ?? existing.purchaseExchangeRate;
     const discountType = p.discountType ?? existing.discountType;
     const discountValue = p.discountValue ?? existing.discountValue;
     const sellingPriceForeign = p.sellingPriceForeign ?? existing.sellingPriceForeign;
     const sellingExchangeRate = p.sellingExchangeRate ?? existing.sellingExchangeRate;
-    const purchaseTotalLak = quantity * purchasePrice * purchaseExchangeRate;
-    const totalCostBeforeDiscountLak = purchaseTotalLak;
-    const discountAmountLak =
-      discountType === 'PERCENT' ? (totalCostBeforeDiscountLak * discountValue) / 100 : discountValue;
-    const finalCostLak = totalCostBeforeDiscountLak - discountAmountLak;
-    const finalCostThb = purchaseExchangeRate > 0 ? finalCostLak / purchaseExchangeRate : 0;
-    const sellingTotalLak = quantity * sellingPriceForeign * sellingExchangeRate;
-    const profitLak = sellingTotalLak - finalCostLak;
-    const profitThb = sellingExchangeRate > 0 ? profitLak / sellingExchangeRate : 0;
-    const updated = OrderItemEntity.create({
+    const updated = OrderItemEntity.createCalculated({
       id: existing.id,
       orderId: command.orderId,
       productName,
@@ -47,18 +51,10 @@ export class UpdateOrderItemHandler implements ICommandHandler<UpdateOrderItemCo
       purchaseCurrency: existing.purchaseCurrency,
       purchasePrice,
       purchaseExchangeRate,
-      purchaseTotalLak,
-      totalCostBeforeDiscountLak,
       discountType,
       discountValue,
-      discountAmountLak,
-      finalCostLak,
-      finalCostThb,
       sellingPriceForeign,
       sellingExchangeRate,
-      sellingTotalLak,
-      profitLak,
-      profitThb,
       createdAt: existing.createdAt,
       updatedAt: new Date(),
     });

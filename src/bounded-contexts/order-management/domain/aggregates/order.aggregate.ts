@@ -1,7 +1,9 @@
 import { AggregateRoot } from '../../../../shared/domain/aggregate-root';
 import type { EntityProps } from '../../../../shared/domain/entity-base';
+import { DomainException } from '../../../../shared/domain/exceptions';
 import type { OrderItemEntity } from '../entities/order-item.entity';
 import type { ArrivalStatus } from '../value-objects/arrival-status.vo';
+import type { OrderStatus } from '../value-objects/order-status.vo';
 import type { PaymentStatus } from '../value-objects/payment-status.vo';
 
 export interface OrderAggregateProps extends EntityProps {
@@ -9,6 +11,7 @@ export interface OrderAggregateProps extends EntityProps {
   createdBy: string;
   orderCode: string;
   orderDate: Date;
+  status: OrderStatus;
   arrivalStatus: ArrivalStatus;
   arrivedAt?: Date;
   notifiedAt?: Date;
@@ -27,7 +30,6 @@ export interface OrderAggregateProps extends EntityProps {
   remainingAmount: number;
   paymentStatus: PaymentStatus;
   items: OrderItemEntity[];
-  isClosed: boolean;
 }
 
 export class OrderAggregate extends AggregateRoot<OrderAggregateProps> {
@@ -36,16 +38,22 @@ export class OrderAggregate extends AggregateRoot<OrderAggregateProps> {
   }
 
   static create(
-    props: Omit<OrderAggregateProps, 'createdAt' | 'updatedAt' | 'items'> & {
+    props: Omit<OrderAggregateProps, 'createdAt' | 'updatedAt' | 'items' | 'status'> & {
+      status?: OrderStatus;
       createdAt?: Date;
       updatedAt?: Date;
       items?: OrderItemEntity[];
     },
   ): OrderAggregate {
-    if (!props.merchantId?.trim()) throw new Error('Merchant is required');
-    if (!props.orderCode?.trim()) throw new Error('Order code is required');
+    if (!props.merchantId?.trim())
+      throw new DomainException('Merchant is required', 'ORDER_MERCHANT_REQUIRED');
+    if (!props.createdBy?.trim())
+      throw new DomainException('Created by is required', 'ORDER_CREATED_BY_REQUIRED');
+    if (!props.orderCode?.trim())
+      throw new DomainException('Order code is required', 'ORDER_CODE_REQUIRED');
     return new OrderAggregate({
       ...props,
+      status: props.status ?? 'DRAFT',
       arrivalStatus: props.arrivalStatus ?? 'NOT_ARRIVED',
       paymentStatus: props.paymentStatus ?? 'UNPAID',
       totalPurchaseCostLak: props.totalPurchaseCostLak ?? 0,
@@ -62,7 +70,6 @@ export class OrderAggregate extends AggregateRoot<OrderAggregateProps> {
       paidAmount: props.paidAmount ?? 0,
       remainingAmount: props.remainingAmount ?? 0,
       items: props.items ?? [],
-      isClosed: props.isClosed ?? false,
       createdAt: props.createdAt ?? new Date(),
       updatedAt: props.updatedAt ?? new Date(),
     });
@@ -83,6 +90,9 @@ export class OrderAggregate extends AggregateRoot<OrderAggregateProps> {
   }
   get orderDate(): Date {
     return this.props.orderDate;
+  }
+  get status(): OrderStatus {
+    return this.props.status;
   }
   get arrivalStatus(): ArrivalStatus {
     return this.props.arrivalStatus;
@@ -139,11 +149,28 @@ export class OrderAggregate extends AggregateRoot<OrderAggregateProps> {
     return this.props.items ?? [];
   }
   get isClosed(): boolean {
-    return this.props.isClosed ?? false;
+    return this.props.status === 'CLOSED';
+  }
+
+  private assertDraft(action: string): void {
+    if (this.props.status !== 'DRAFT') {
+      throw new DomainException(
+        `Order must be DRAFT to ${action}`,
+        'ORDER_NOT_DRAFT',
+      );
+    }
+  }
+
+  confirm(): void {
+    if (this.props.status === 'CONFIRMED') return;
+    this.assertDraft('confirm');
+    (this.props as OrderAggregateProps).status = 'CONFIRMED';
+    (this.props as OrderAggregateProps).updatedAt = new Date();
   }
 
   /** Recalculate order totals from items. Call after adding/updating items. */
   recalculateFromItems(): void {
+    this.assertDraft('recalculate totals');
     const items = this.props.items ?? [];
     let totalPurchase = 0;
     let totalCostBeforeDiscount = 0;
@@ -181,12 +208,14 @@ export class OrderAggregate extends AggregateRoot<OrderAggregateProps> {
   }
 
   addItem(item: OrderItemEntity): void {
+    this.assertDraft('add items');
     const items = [...(this.props.items ?? []), item];
     (this.props as OrderAggregateProps).items = items;
     this.recalculateFromItems();
   }
 
   removeItem(itemId: string): void {
+    this.assertDraft('remove items');
     const items = (this.props.items ?? []).filter(
       (i) => (typeof i.id === 'string' ? i.id : i.id.value) !== itemId,
     );
@@ -195,6 +224,7 @@ export class OrderAggregate extends AggregateRoot<OrderAggregateProps> {
   }
 
   updateItem(itemId: string, updated: OrderItemEntity): void {
+    this.assertDraft('update items');
     const items = (this.props.items ?? []).map((i) => {
       const id = typeof i.id === 'string' ? i.id : (i.id as { value: string }).value;
       return id === itemId ? updated : i;
@@ -223,11 +253,13 @@ export class OrderAggregate extends AggregateRoot<OrderAggregateProps> {
   }
 
   close(): void {
-    (this.props as OrderAggregateProps).isClosed = true;
+    if (this.props.status === 'CLOSED') return;
+    (this.props as OrderAggregateProps).status = 'CLOSED';
     (this.props as OrderAggregateProps).updatedAt = new Date();
   }
 
   updateDetails(orderCode?: string, orderDate?: Date): void {
+    this.assertDraft('update details');
     if (orderCode != null && orderCode.trim()) (this.props as OrderAggregateProps).orderCode = orderCode;
     if (orderDate != null) (this.props as OrderAggregateProps).orderDate = orderDate;
     (this.props as OrderAggregateProps).updatedAt = new Date();

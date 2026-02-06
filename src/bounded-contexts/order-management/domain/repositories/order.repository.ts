@@ -1,9 +1,11 @@
 import type { OrderAggregate } from '../aggregates/order.aggregate';
+import type { OrderStatus } from '../value-objects/order-status.vo';
 
 export const ORDER_REPOSITORY = Symbol('ORDER_REPOSITORY');
 
 export interface OrderRepositoryFindManyParams {
   merchantId: string;
+  status?: OrderStatus;
   page?: number;
   limit?: number;
   fromDate?: Date;

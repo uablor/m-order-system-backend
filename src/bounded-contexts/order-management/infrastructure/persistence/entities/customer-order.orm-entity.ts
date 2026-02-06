@@ -25,6 +25,9 @@ export class CustomerOrderOrmEntity {
   @Column({ type: 'char', length: 36 })
   merchant_id!: string;
 
+  @Column({ type: 'varchar', length: 32, default: 'DRAFT' })
+  status!: string; // DRAFT | SUBMITTED | COMPLETED
+
   @Column({ type: 'decimal', precision: 18, scale: 4, default: 0 })
   total_selling_amount_lak!: string;
 

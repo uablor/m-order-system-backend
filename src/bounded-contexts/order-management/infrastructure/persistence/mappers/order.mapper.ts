@@ -1,6 +1,7 @@
 import { UniqueEntityId } from '../../../../../shared/domain/value-objects';
 import type { OrderAggregate } from '../../../domain/aggregates/order.aggregate';
 import { OrderAggregate as OrderClass } from '../../../domain/aggregates/order.aggregate';
+import type { OrderStatus } from '../../../domain/value-objects/order-status.vo';
 import type { OrderOrmEntity } from '../entities/order.orm-entity';
 import { orderItemOrmToDomain } from './order-item.mapper';
 
@@ -10,12 +11,17 @@ function toNum(v: string | number): number {
 
 export function orderOrmToDomain(orm: OrderOrmEntity): OrderAggregate {
   const items = (orm.items ?? []).map(orderItemOrmToDomain);
+  const status = (
+    orm.status ??
+    ((orm.is_closed ?? false) ? 'CLOSED' : 'DRAFT')
+  ) as OrderStatus;
   return OrderClass.fromPersistence({
     id: UniqueEntityId.create(orm.domain_id ?? orm.order_id),
     merchantId: orm.merchant_id,
     createdBy: orm.created_by,
     orderCode: orm.order_code,
     orderDate: orm.order_date instanceof Date ? orm.order_date : new Date(orm.order_date),
+    status,
     arrivalStatus: (orm.arrival_status ?? 'NOT_ARRIVED') as 'NOT_ARRIVED' | 'ARRIVED',
     arrivedAt: orm.arrived_at ?? undefined,
     notifiedAt: orm.notified_at ?? undefined,
@@ -34,7 +40,6 @@ export function orderOrmToDomain(orm: OrderOrmEntity): OrderAggregate {
     remainingAmount: toNum(orm.remaining_amount),
     paymentStatus: (orm.payment_status ?? 'UNPAID') as 'UNPAID' | 'PARTIAL' | 'PAID',
     items,
-    isClosed: orm.is_closed ?? false,
     createdAt: orm.created_at,
     updatedAt: orm.updated_at,
   });
@@ -49,6 +54,7 @@ export function orderDomainToOrm(agg: OrderAggregate): Partial<OrderOrmEntity> {
     created_by: agg.createdBy,
     order_code: agg.orderCode,
     order_date: agg.orderDate,
+    status: agg.status,
     arrival_status: agg.arrivalStatus,
     arrived_at: agg.arrivedAt ?? null,
     notified_at: agg.notifiedAt ?? null,
@@ -66,7 +72,7 @@ export function orderDomainToOrm(agg: OrderAggregate): Partial<OrderOrmEntity> {
     paid_amount: String(agg.paidAmount),
     remaining_amount: String(agg.remainingAmount),
     payment_status: agg.paymentStatus,
-    is_closed: agg.isClosed,
+    is_closed: agg.status === 'CLOSED',
     updated_at: agg.updatedAt ?? new Date(),
   };
 }

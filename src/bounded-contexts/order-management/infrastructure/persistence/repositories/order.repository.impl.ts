@@ -22,32 +22,38 @@ export class OrderRepositoryImpl implements IOrderRepository {
 
   async save(aggregate: OrderAggregate): Promise<OrderAggregate> {
     const domainId = aggregate.id.value;
-    const ormOrder = this.orderRepo.create(
-      orderDomainToOrm(aggregate) as Partial<OrderOrmEntity>,
-    );
-    ormOrder.order_id = domainId;
-    ormOrder.domain_id = domainId;
-    await this.orderRepo.save(ormOrder);
+    await this.orderRepo.manager.transaction(async (manager) => {
+      const orderRepo = manager.getRepository(OrderOrmEntity);
+      const itemRepo = manager.getRepository(OrderItemOrmEntity);
 
-    const existingIds = (
-      await this.itemRepo.find({ where: { order_id: domainId }, select: ['item_id'] })
-    ).map((r) => r.item_id);
-    const currentIds = aggregate.items.map((i) =>
-      typeof i.id === 'string' ? i.id : i.id.value,
-    );
-    for (const item of aggregate.items) {
-      const itemDomainId = typeof item.id === 'string' ? item.id : item.id.value;
-      const ormItem = this.itemRepo.create(
-        orderItemDomainToOrm(item, domainId) as Partial<OrderItemOrmEntity>,
+      const ormOrder = orderRepo.create(orderDomainToOrm(aggregate) as Partial<OrderOrmEntity>);
+      ormOrder.order_id = domainId;
+      ormOrder.domain_id = domainId;
+      await orderRepo.save(ormOrder);
+
+      const existingIds = (
+        await itemRepo.find({
+          where: { order_id: domainId },
+          select: ['item_id'],
+        })
+      ).map((r) => r.item_id);
+      const currentIds = aggregate.items.map((i) =>
+        typeof i.id === 'string' ? i.id : i.id.value,
       );
-      ormItem.item_id = itemDomainId;
-      ormItem.domain_id = itemDomainId;
-      ormItem.order_id = domainId;
-      await this.itemRepo.save(ormItem);
-    }
-    for (const id of existingIds) {
-      if (!currentIds.includes(id)) await this.itemRepo.delete(id);
-    }
+      for (const item of aggregate.items) {
+        const itemDomainId = typeof item.id === 'string' ? item.id : item.id.value;
+        const ormItem = itemRepo.create(
+          orderItemDomainToOrm(item, domainId) as Partial<OrderItemOrmEntity>,
+        );
+        ormItem.item_id = itemDomainId;
+        ormItem.domain_id = itemDomainId;
+        ormItem.order_id = domainId;
+        await itemRepo.save(ormItem);
+      }
+      for (const id of existingIds) {
+        if (!currentIds.includes(id)) await itemRepo.delete(id);
+      }
+    });
 
     return this.findById(domainId) as Promise<OrderAggregate>;
   }
@@ -78,6 +84,9 @@ export class OrderRepositoryImpl implements IOrderRepository {
       .createQueryBuilder('o')
       .leftJoinAndSelect('o.items', 'items')
       .where('o.merchant_id = :merchantId', { merchantId: params.merchantId });
+    if (params.status) {
+      qb.andWhere('o.status = :status', { status: params.status });
+    }
     if (params.fromDate) {
       qb.andWhere('o.order_date >= :fromDate', { fromDate: params.fromDate });
     }
@@ -96,7 +105,11 @@ export class OrderRepositoryImpl implements IOrderRepository {
   }
 
   async delete(domainId: string): Promise<void> {
-    await this.itemRepo.delete({ order_id: domainId });
-    await this.orderRepo.delete({ domain_id: domainId });
+    await this.orderRepo.manager.transaction(async (manager) => {
+      const orderRepo = manager.getRepository(OrderOrmEntity);
+      const itemRepo = manager.getRepository(OrderItemOrmEntity);
+      await itemRepo.delete({ order_id: domainId });
+      await orderRepo.delete({ domain_id: domainId });
+    });
   }
 }

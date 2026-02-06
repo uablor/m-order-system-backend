@@ -25,6 +25,7 @@ export class RefreshTokenHandler
       merchantId: payload.merchantId,
       role: payload.role,
       permissions: payload.permissions,
+      isPlatform: payload.isPlatform,
     });
     return { accessToken };
   }

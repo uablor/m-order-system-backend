@@ -3,9 +3,10 @@ export const TOKEN_SERVICE = Symbol('TOKEN_SERVICE');
 export interface TokenPayload {
   sub: string;
   email: string;
-  merchantId: string;
+  merchantId?: string;
   role: string;
   permissions?: string[];
+  isPlatform?: boolean;
 }
 
 export interface ITokenService {

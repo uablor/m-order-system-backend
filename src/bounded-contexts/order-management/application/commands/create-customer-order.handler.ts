@@ -1,4 +1,4 @@
-import { Inject, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, NotFoundException } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { CreateCustomerOrderCommand } from './create-customer-order.command';
 import {
@@ -22,11 +22,15 @@ export class CreateCustomerOrderHandler implements ICommandHandler<CreateCustome
   async execute(command: CreateCustomerOrderCommand): Promise<CustomerOrderAggregate> {
     const order = await this.orderRepo.findById(command.orderId);
     if (!order) throw new NotFoundException('Order not found');
+    if (order.status === 'CLOSED') {
+      throw new BadRequestException('Cannot create customer order for a closed order');
+    }
     const aggregate = CustomerOrderAggregate.create({
       id: UniqueEntityId.create(generateUuid()),
       orderId: command.orderId,
       customerId: command.customerId,
       merchantId: command.merchantId,
+      status: 'DRAFT',
       totalSellingAmountLak: 0,
       totalPaid: 0,
       remainingAmount: 0,

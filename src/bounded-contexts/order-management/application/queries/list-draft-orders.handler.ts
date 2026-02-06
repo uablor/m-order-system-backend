@@ -1,28 +1,25 @@
 import { Inject } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-import { ListOrdersQuery } from './list-orders.query';
+import { ListDraftOrdersQuery } from './list-draft-orders.query';
 import { ORDER_REPOSITORY, type IOrderRepository } from '../../domain/repositories/order.repository';
 import {
   buildPaginationMeta,
   normalizePaginationParams,
 } from '../../../../shared/infrastructure/persistence/pagination';
 
-@QueryHandler(ListOrdersQuery)
-export class ListOrdersHandler implements IQueryHandler<ListOrdersQuery> {
+@QueryHandler(ListDraftOrdersQuery)
+export class ListDraftOrdersHandler implements IQueryHandler<ListDraftOrdersQuery> {
   constructor(
     @Inject(ORDER_REPOSITORY)
     private readonly repo: IOrderRepository,
   ) {}
 
-  async execute(query: ListOrdersQuery) {
-    const fromDate = query.fromDate ? new Date(query.fromDate) : undefined;
-    const toDate = query.toDate ? new Date(query.toDate) : undefined;
+  async execute(query: ListDraftOrdersQuery) {
     const { data, total } = await this.repo.findMany({
       merchantId: query.merchantId,
+      status: 'DRAFT',
       page: query.page,
       limit: query.limit,
-      fromDate,
-      toDate,
     });
     const { page, limit } = normalizePaginationParams(query.page, query.limit);
     const pagination = buildPaginationMeta(total, page, limit, data.length);
@@ -38,10 +35,10 @@ export class ListOrdersHandler implements IQueryHandler<ListOrdersQuery> {
         totalFinalCostLak: a.totalFinalCostLak,
         totalSellingAmountLak: a.totalSellingAmountLak,
         totalProfitLak: a.totalProfitLak,
-        isClosed: a.isClosed,
         createdAt: a.createdAt,
       })),
       pagination,
     };
   }
 }
+

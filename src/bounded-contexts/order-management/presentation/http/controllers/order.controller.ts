@@ -28,6 +28,7 @@ import { CalculateOrderCommand } from '../../../application/commands/calculate-o
 import { CloseOrderCommand } from '../../../application/commands/close-order.command';
 import { GetOrderQuery } from '../../../application/queries/get-order.query';
 import { ListOrdersQuery } from '../../../application/queries/list-orders.query';
+import { ListDraftOrdersQuery } from '../../../application/queries/list-draft-orders.query';
 import { CreateOrderDto } from '../../../application/dto/create-order.dto';
 import { UpdateOrderDto } from '../../../application/dto/update-order.dto';
 import { AddOrderItemDto } from '../../../application/dto/add-order-item.dto';
@@ -73,6 +74,20 @@ export class OrderController {
   ) {
     return this.queryBus.execute(
       new ListOrdersQuery(merchantId, pagination.page, pagination.limit, fromDate, toDate),
+    );
+  }
+
+  @Get('drafts')
+  @ApiOperation({ summary: 'List draft orders by merchant' })
+  @ApiQuery({ name: 'merchantId', required: true })
+  @ApiQuery({ name: 'page', required: false })
+  @ApiQuery({ name: 'limit', required: false })
+  async listDrafts(
+    @Query('merchantId') merchantId: string,
+    @PaginationQuery() pagination: PaginationQueryParams,
+  ) {
+    return this.queryBus.execute(
+      new ListDraftOrdersQuery(merchantId, pagination.page, pagination.limit),
     );
   }
 

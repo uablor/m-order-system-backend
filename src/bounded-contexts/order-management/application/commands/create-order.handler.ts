@@ -23,6 +23,7 @@ export class CreateOrderHandler implements ICommandHandler<CreateOrderCommand> {
       createdBy: command.createdBy,
       orderCode: command.orderCode,
       orderDate,
+      status: 'DRAFT',
       arrivalStatus: 'NOT_ARRIVED',
       totalPurchaseCostLak: 0,
       totalShippingCostLak: 0,
@@ -38,7 +39,6 @@ export class CreateOrderHandler implements ICommandHandler<CreateOrderCommand> {
       paidAmount: 0,
       remainingAmount: 0,
       paymentStatus: 'UNPAID',
-      isClosed: false,
     });
     return this.repo.save(aggregate);
   }

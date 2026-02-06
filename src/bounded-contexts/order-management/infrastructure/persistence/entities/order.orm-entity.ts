@@ -30,6 +30,9 @@ export class OrderOrmEntity {
   @Column({ type: 'date' })
   order_date!: Date;
 
+  @Column({ type: 'varchar', length: 32, default: 'DRAFT' })
+  status!: string; // DRAFT | CONFIRMED | CLOSED
+
   @Column({ type: 'varchar', length: 32 })
   arrival_status!: string; // NOT_ARRIVED | ARRIVED
 

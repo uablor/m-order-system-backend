@@ -55,8 +55,10 @@ import { ListExchangeRatesHandler } from './application/queries/list-exchange-ra
 import { GetExchangeRatesByDateHandler } from './application/queries/get-exchange-rates-by-date.handler';
 import { GetOrderHandler } from './application/queries/get-order.handler';
 import { ListOrdersHandler } from './application/queries/list-orders.handler';
+import { ListDraftOrdersHandler } from './application/queries/list-draft-orders.handler';
 import { GetCustomerOrderHandler } from './application/queries/get-customer-order.handler';
 import { ListCustomerOrdersHandler } from './application/queries/list-customer-orders.handler';
+import { ListDraftCustomerOrdersHandler } from './application/queries/list-draft-customer-orders.handler';
 import { GetArrivalHandler } from './application/queries/get-arrival.handler';
 import { ListArrivalsHandler } from './application/queries/list-arrivals.handler';
 import { GetNotificationHandler } from './application/queries/get-notification.handler';
@@ -103,8 +105,10 @@ const QueryHandlers = [
   GetExchangeRatesByDateHandler,
   GetOrderHandler,
   ListOrdersHandler,
+  ListDraftOrdersHandler,
   GetCustomerOrderHandler,
   ListCustomerOrdersHandler,
+  ListDraftCustomerOrdersHandler,
   GetArrivalHandler,
   ListArrivalsHandler,
   GetNotificationHandler,

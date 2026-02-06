@@ -22,6 +22,7 @@ import { AddCustomerOrderItemCommand } from '../../../application/commands/add-c
 import { DeleteCustomerOrderCommand } from '../../../application/commands/delete-customer-order.command';
 import { GetCustomerOrderQuery } from '../../../application/queries/get-customer-order.query';
 import { ListCustomerOrdersQuery } from '../../../application/queries/list-customer-orders.query';
+import { ListDraftCustomerOrdersQuery } from '../../../application/queries/list-draft-customer-orders.query';
 import { CreateCustomerOrderDto } from '../../../application/dto/create-customer-order.dto';
 import { AddCustomerOrderItemDto } from '../../../application/dto/add-customer-order-item.dto';
 import { PaginationQuery, type PaginationQueryParams } from '@shared/application/pagination';
@@ -67,6 +68,27 @@ export class CustomerOrderController {
       new ListCustomerOrdersQuery(
         merchantId,
         orderId,
+        customerId,
+        pagination.page,
+        pagination.limit,
+      ),
+    );
+  }
+
+  @Get('drafts')
+  @ApiOperation({ summary: 'List draft customer orders by customer' })
+  @ApiQuery({ name: 'merchantId', required: true })
+  @ApiQuery({ name: 'customerId', required: true })
+  @ApiQuery({ name: 'page', required: false })
+  @ApiQuery({ name: 'limit', required: false })
+  async listDrafts(
+    @Query('merchantId') merchantId: string,
+    @Query('customerId') customerId: string,
+    @PaginationQuery() pagination: PaginationQueryParams,
+  ) {
+    return this.queryBus.execute(
+      new ListDraftCustomerOrdersQuery(
+        merchantId,
         customerId,
         pagination.page,
         pagination.limit,

@@ -21,6 +21,7 @@ export class GetCustomerOrderHandler implements IQueryHandler<GetCustomerOrderQu
       orderId: aggregate.orderId,
       customerId: aggregate.customerId,
       merchantId: aggregate.merchantId,
+      status: aggregate.status,
       totalSellingAmountLak: aggregate.totalSellingAmountLak,
       totalPaid: aggregate.totalPaid,
       remainingAmount: aggregate.remainingAmount,

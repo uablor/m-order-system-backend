@@ -5,6 +5,8 @@ module.exports = {
   testRegex: 'test/(unit|integration)/.+\\.spec\\.ts$',
   transform: { '^.+\\.(t|j)s$': 'ts-jest' },
   testEnvironment: 'node',
+  /** Run in single process to avoid OOM when multiple ts-jest workers load the codebase. */
+  maxWorkers: 1,
   moduleNameMapper: {
     '^@shared/(.*)$': '<rootDir>/src/shared/$1',
   },

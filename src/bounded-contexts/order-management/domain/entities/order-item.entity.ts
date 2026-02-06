@@ -1,5 +1,6 @@
 import { Entity } from '../../../../shared/domain/entity-base';
 import type { EntityProps } from '../../../../shared/domain/entity-base';
+import { DomainException } from '../../../../shared/domain/exceptions';
 import type { DiscountType } from '../value-objects/discount-type.vo';
 
 export interface OrderItemEntityProps extends EntityProps {
@@ -29,16 +30,105 @@ export class OrderItemEntity extends Entity<OrderItemEntityProps> {
     super(props);
   }
 
+  private static computeTotals(params: {
+    quantity: number;
+    purchasePrice: number;
+    purchaseExchangeRate: number;
+    discountType: DiscountType;
+    discountValue: number;
+    sellingPriceForeign: number;
+    sellingExchangeRate: number;
+  }) {
+    const purchaseTotalLak =
+      params.quantity * params.purchasePrice * params.purchaseExchangeRate;
+    const totalCostBeforeDiscountLak = purchaseTotalLak;
+    const discountAmountLak =
+      params.discountType === 'PERCENT'
+        ? (totalCostBeforeDiscountLak * params.discountValue) / 100
+        : params.discountValue;
+    const finalCostLak = totalCostBeforeDiscountLak - discountAmountLak;
+    const finalCostThb =
+      params.purchaseExchangeRate > 0 ? finalCostLak / params.purchaseExchangeRate : 0;
+    const sellingTotalLak =
+      params.quantity * params.sellingPriceForeign * params.sellingExchangeRate;
+    const profitLak = sellingTotalLak - finalCostLak;
+    const profitThb = params.sellingExchangeRate > 0 ? profitLak / params.sellingExchangeRate : 0;
+
+    return {
+      purchaseTotalLak,
+      totalCostBeforeDiscountLak,
+      discountAmountLak,
+      finalCostLak,
+      finalCostThb,
+      sellingTotalLak,
+      profitLak,
+      profitThb,
+    };
+  }
+
   static create(
     props: Omit<OrderItemEntityProps, 'createdAt' | 'updatedAt'> & {
       createdAt?: Date;
       updatedAt?: Date;
     },
   ): OrderItemEntity {
+    if (!props.orderId?.trim())
+      throw new DomainException('Order is required', 'ORDER_ITEM_ORDER_REQUIRED');
+    if (!props.productName?.trim())
+      throw new DomainException(
+        'Product name is required',
+        'ORDER_ITEM_PRODUCT_NAME_REQUIRED',
+      );
+    if (props.quantity == null || props.quantity <= 0)
+      throw new DomainException(
+        'Quantity must be greater than 0',
+        'ORDER_ITEM_QUANTITY_INVALID',
+      );
     return new OrderItemEntity({
       ...props,
       createdAt: props.createdAt ?? new Date(),
       updatedAt: props.updatedAt ?? new Date(),
+    });
+  }
+
+  static createCalculated(
+    props: Pick<
+      OrderItemEntityProps,
+      | 'id'
+      | 'orderId'
+      | 'productName'
+      | 'variant'
+      | 'quantity'
+      | 'purchaseCurrency'
+      | 'purchasePrice'
+      | 'purchaseExchangeRate'
+      | 'discountType'
+      | 'discountValue'
+      | 'sellingPriceForeign'
+      | 'sellingExchangeRate'
+    > & { createdAt?: Date; updatedAt?: Date },
+  ): OrderItemEntity {
+    const totals = OrderItemEntity.computeTotals({
+      quantity: props.quantity,
+      purchasePrice: props.purchasePrice,
+      purchaseExchangeRate: props.purchaseExchangeRate,
+      discountType: props.discountType,
+      discountValue: props.discountValue,
+      sellingPriceForeign: props.sellingPriceForeign,
+      sellingExchangeRate: props.sellingExchangeRate,
+    });
+    return OrderItemEntity.create({
+      ...props,
+      purchaseTotalLak: totals.purchaseTotalLak,
+      totalCostBeforeDiscountLak: totals.totalCostBeforeDiscountLak,
+      discountAmountLak: totals.discountAmountLak,
+      finalCostLak: totals.finalCostLak,
+      finalCostThb: totals.finalCostThb,
+      sellingTotalLak: totals.sellingTotalLak,
+      profitLak: totals.profitLak,
+      profitThb: totals.profitThb,
+      createdAt: props.createdAt,
+      updatedAt: props.updatedAt,
     });
   }
 

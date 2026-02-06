@@ -11,6 +11,7 @@ function toDto(aggregate: Awaited<ReturnType<IOrderRepository['findById']>>) {
     createdBy: aggregate.createdBy,
     orderCode: aggregate.orderCode,
     orderDate: aggregate.orderDate,
+    status: aggregate.status,
     arrivalStatus: aggregate.arrivalStatus,
     arrivedAt: aggregate.arrivedAt,
     notifiedAt: aggregate.notifiedAt,

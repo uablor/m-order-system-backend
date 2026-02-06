@@ -8,14 +8,17 @@ import {
   RoleOrmEntity,
   RolePermissionOrmEntity,
   PermissionOrmEntity,
+  PlatformUserOrmEntity,
 } from './infrastructure/persistence/entities';
 import { USER_REPOSITORY } from './domain/repositories/user.repository';
+import { PLATFORM_USER_REPOSITORY } from './domain/repositories/platform-user.repository';
 import { ROLE_REPOSITORY } from './domain/repositories/role.repository';
 import { PERMISSION_REPOSITORY } from './domain/repositories/permission.repository';
 import { PASSWORD_HASHER } from './domain/services/password-hasher.port';
 import { TOKEN_SERVICE } from './domain/services/token-service.port';
 import { MERCHANT_PORT } from './domain/services/merchant.port';
 import { UserRepositoryImpl } from './infrastructure/persistence/repositories/user.repository.impl';
+import { PlatformUserRepositoryImpl } from './infrastructure/persistence/repositories/platform-user.repository.impl';
 import { RoleRepositoryImpl } from './infrastructure/persistence/repositories/role.repository.impl';
 import { PermissionRepositoryImpl } from './infrastructure/persistence/repositories/permission.repository.impl';
 import { BcryptPasswordHasher } from './infrastructure/external-services/bcrypt-password-hasher';
@@ -33,6 +36,10 @@ import { CreateRoleHandler } from './application/commands/create-role.handler';
 import { UpdateRoleHandler } from './application/commands/update-role.handler';
 import { DeleteRoleHandler } from './application/commands/delete-role.handler';
 import { PutRolePermissionsHandler } from './application/commands/put-role-permissions.handler';
+import { CreatePlatformUserHandler } from './application/commands/create-platform-user.handler';
+import { ChangePlatformUserRoleHandler } from './application/commands/change-platform-user-role.handler';
+import { DeactivatePlatformUserHandler } from './application/commands/deactivate-platform-user.handler';
+import { PlatformLoginHandler } from './application/commands/platform-login.handler';
 import { GetUserByIdHandler } from './application/queries/get-user-by-id.handler';
 import { ListUsersHandler } from './application/queries/list-users.handler';
 import { GetRoleHandler } from './application/queries/get-role.handler';
@@ -42,6 +49,7 @@ import { UserController } from './presentation/http/controllers/user.controller'
 import { AuthController } from './presentation/http/controllers/auth.controller';
 import { RoleController } from './presentation/http/controllers/role.controller';
 import { PermissionController } from './presentation/http/controllers/permission.controller';
+import { PlatformAuthController } from './presentation/http/controllers/platform-auth.controller';
 
 const CommandHandlers = [
   CreateUserHandler,
@@ -53,6 +61,10 @@ const CommandHandlers = [
   UpdateRoleHandler,
   DeleteRoleHandler,
   PutRolePermissionsHandler,
+  CreatePlatformUserHandler,
+  ChangePlatformUserRoleHandler,
+  DeactivatePlatformUserHandler,
+  PlatformLoginHandler,
 ];
 const QueryHandlers = [
   GetUserByIdHandler,
@@ -70,6 +82,7 @@ const QueryHandlers = [
       RoleOrmEntity,
       RolePermissionOrmEntity,
       PermissionOrmEntity,
+      PlatformUserOrmEntity,
     ]),
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.register({
@@ -77,9 +90,16 @@ const QueryHandlers = [
       signOptions: { expiresIn: process.env.JWT_ACCESS_EXPIRY ?? '15m' },
     }),
   ],
-  controllers: [UserController, AuthController, RoleController, PermissionController],
+  controllers: [
+    UserController,
+    AuthController,
+    RoleController,
+    PermissionController,
+    PlatformAuthController,
+  ],
   providers: [
     { provide: USER_REPOSITORY, useClass: UserRepositoryImpl },
+    { provide: PLATFORM_USER_REPOSITORY, useClass: PlatformUserRepositoryImpl },
     { provide: ROLE_REPOSITORY, useClass: RoleRepositoryImpl },
     { provide: PERMISSION_REPOSITORY, useClass: PermissionRepositoryImpl },
     { provide: PASSWORD_HASHER, useClass: BcryptPasswordHasher },
@@ -93,6 +113,7 @@ const QueryHandlers = [
   ],
   exports: [
     USER_REPOSITORY,
+    PLATFORM_USER_REPOSITORY,
     ROLE_REPOSITORY,
     PERMISSION_REPOSITORY,
     PASSWORD_HASHER,

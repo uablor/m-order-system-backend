@@ -1,6 +1,6 @@
 import { Inject } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-import { ListCustomerOrdersQuery } from './list-customer-orders.query';
+import { ListDraftCustomerOrdersQuery } from './list-draft-customer-orders.query';
 import {
   CUSTOMER_ORDER_REPOSITORY,
   type ICustomerOrderRepository,
@@ -10,18 +10,20 @@ import {
   normalizePaginationParams,
 } from '../../../../shared/infrastructure/persistence/pagination';
 
-@QueryHandler(ListCustomerOrdersQuery)
-export class ListCustomerOrdersHandler implements IQueryHandler<ListCustomerOrdersQuery> {
+@QueryHandler(ListDraftCustomerOrdersQuery)
+export class ListDraftCustomerOrdersHandler
+  implements IQueryHandler<ListDraftCustomerOrdersQuery>
+{
   constructor(
     @Inject(CUSTOMER_ORDER_REPOSITORY)
     private readonly repo: ICustomerOrderRepository,
   ) {}
 
-  async execute(query: ListCustomerOrdersQuery) {
+  async execute(query: ListDraftCustomerOrdersQuery) {
     const { data, total } = await this.repo.findMany({
       merchantId: query.merchantId,
-      orderId: query.orderId,
       customerId: query.customerId,
+      status: 'DRAFT',
       page: query.page,
       limit: query.limit,
     });
@@ -44,3 +46,4 @@ export class ListCustomerOrdersHandler implements IQueryHandler<ListCustomerOrde
     };
   }
 }
+

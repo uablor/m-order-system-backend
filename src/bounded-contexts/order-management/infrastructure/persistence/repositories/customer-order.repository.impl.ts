@@ -25,33 +25,40 @@ export class CustomerOrderRepositoryImpl implements ICustomerOrderRepository {
 
   async save(aggregate: CustomerOrderAggregate): Promise<CustomerOrderAggregate> {
     const coId = aggregate.id.value;
-    const ormOrder = this.orderRepo.create(
-      customerOrderDomainToOrm(aggregate) as Partial<CustomerOrderOrmEntity>,
-    );
-    ormOrder.customer_order_id = coId;
-    await this.orderRepo.save(ormOrder);
+    await this.orderRepo.manager.transaction(async (manager) => {
+      const orderRepo = manager.getRepository(CustomerOrderOrmEntity);
+      const itemRepo = manager.getRepository(CustomerOrderItemOrmEntity);
 
-    const existingIds = (
-      await this.itemRepo.find({
-        where: { customer_order_id: coId },
-        select: ['id'],
-      })
-    ).map((r) => r.id);
-    const currentIds = aggregate.items.map((i) =>
-      typeof i.id === 'string' ? i.id : i.id.value,
-    );
-    for (const item of aggregate.items) {
-      const itemId = typeof item.id === 'string' ? item.id : item.id.value;
-      const ormItem = this.itemRepo.create(
-        customerOrderItemDomainToOrm(item, coId) as Partial<CustomerOrderItemOrmEntity>,
+      const ormOrder = orderRepo.create(
+        customerOrderDomainToOrm(aggregate) as Partial<CustomerOrderOrmEntity>,
       );
-      ormItem.id = itemId;
-      ormItem.customer_order_id = coId;
-      await this.itemRepo.save(ormItem);
-    }
-    for (const id of existingIds) {
-      if (!currentIds.includes(id)) await this.itemRepo.delete(id);
-    }
+      ormOrder.customer_order_id = coId;
+      ormOrder.domain_id = coId;
+      await orderRepo.save(ormOrder);
+
+      const existingIds = (
+        await itemRepo.find({
+          where: { customer_order_id: coId },
+          select: ['id'],
+        })
+      ).map((r) => r.id);
+      const currentIds = aggregate.items.map((i) =>
+        typeof i.id === 'string' ? i.id : i.id.value,
+      );
+      for (const item of aggregate.items) {
+        const itemId = typeof item.id === 'string' ? item.id : item.id.value;
+        const ormItem = itemRepo.create(
+          customerOrderItemDomainToOrm(item, coId) as Partial<CustomerOrderItemOrmEntity>,
+        );
+        ormItem.id = itemId;
+        ormItem.domain_id = itemId;
+        ormItem.customer_order_id = coId;
+        await itemRepo.save(ormItem);
+      }
+      for (const id of existingIds) {
+        if (!currentIds.includes(id)) await itemRepo.delete(id);
+      }
+    });
 
     return this.findById(coId) as Promise<CustomerOrderAggregate>;
   }
@@ -64,6 +71,16 @@ export class CustomerOrderRepositoryImpl implements ICustomerOrderRepository {
     return orm ? customerOrderOrmToDomain(orm) : null;
   }
 
+  async sumAllocatedQuantityForOrderItem(orderItemId: string): Promise<number> {
+    const raw = await this.itemRepo
+      .createQueryBuilder('i')
+      .select('COALESCE(SUM(i.quantity), 0)', 'allocated')
+      .where('i.order_item_id = :orderItemId', { orderItemId })
+      .getRawOne<{ allocated: string | number }>();
+    const v = raw?.allocated ?? 0;
+    return typeof v === 'number' ? v : Number(v);
+  }
+
   async findMany(params: CustomerOrderRepositoryFindManyParams): Promise<{
     data: CustomerOrderAggregate[];
     total: number;
@@ -74,6 +91,7 @@ export class CustomerOrderRepositoryImpl implements ICustomerOrderRepository {
       .where('co.merchant_id = :merchantId', { merchantId: params.merchantId });
     if (params.orderId) qb.andWhere('co.order_id = :orderId', { orderId: params.orderId });
     if (params.customerId) qb.andWhere('co.customer_id = :customerId', { customerId: params.customerId });
+    if (params.status) qb.andWhere('co.status = :status', { status: params.status });
     qb.orderBy('co.created_at', 'DESC');
 
     const page = Math.max(1, params.page ?? 1);
@@ -86,7 +104,11 @@ export class CustomerOrderRepositoryImpl implements ICustomerOrderRepository {
   }
 
   async delete(id: string): Promise<void> {
-    await this.itemRepo.delete({ customer_order_id: id });
-    await this.orderRepo.delete(id);
+    await this.orderRepo.manager.transaction(async (manager) => {
+      const orderRepo = manager.getRepository(CustomerOrderOrmEntity);
+      const itemRepo = manager.getRepository(CustomerOrderItemOrmEntity);
+      await itemRepo.delete({ customer_order_id: id });
+      await orderRepo.delete(id);
+    });
   }
 }
