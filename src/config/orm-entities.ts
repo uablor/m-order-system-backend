@@ -6,6 +6,8 @@ import {
   RoleOrmEntity,
   RolePermissionOrmEntity,
   UserOrmEntity,
+  PlatformUserOrmEntity,
+  PlatformRoleOrmEntity,
 } from '../bounded-contexts/identity-access/infrastructure/persistence/entities';
 import { MerchantOrmEntity } from '../bounded-contexts/merchant-management/infrastructure/persistence/entities';
 import { CustomerOrmEntity } from '../bounded-contexts/customer-management/infrastructure/persistence/entities';
@@ -27,6 +29,8 @@ export const ormEntities = [
   RoleOrmEntity,
   RolePermissionOrmEntity,
   UserOrmEntity,
+  PlatformUserOrmEntity,
+  PlatformRoleOrmEntity,
   MerchantOrmEntity,
   CustomerOrmEntity,
   ExchangeRateOrmEntity,

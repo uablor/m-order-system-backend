@@ -58,6 +58,12 @@ export class PlatformUserAggregate extends AggregateRoot<PlatformUserAggregatePr
     return this.props.isActive;
   }
 
+  updateProfile(fullName: string): void {
+    if (!fullName?.trim()) return;
+    (this.props as PlatformUserAggregateProps).fullName = fullName.trim();
+    (this.props as PlatformUserAggregateProps).updatedAt = new Date();
+  }
+
   changeRole(newRole: PlatformRole): void {
     (this.props as PlatformUserAggregateProps).role = newRole;
     (this.props as PlatformUserAggregateProps).updatedAt = new Date();

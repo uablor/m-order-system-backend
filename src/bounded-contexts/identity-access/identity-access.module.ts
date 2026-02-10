@@ -9,9 +9,11 @@ import {
   RolePermissionOrmEntity,
   PermissionOrmEntity,
   PlatformUserOrmEntity,
+  PlatformRoleOrmEntity,
 } from './infrastructure/persistence/entities';
 import { USER_REPOSITORY } from './domain/repositories/user.repository';
 import { PLATFORM_USER_REPOSITORY } from './domain/repositories/platform-user.repository';
+import { PLATFORM_ROLE_REPOSITORY } from './domain/repositories/platform-role.repository';
 import { ROLE_REPOSITORY } from './domain/repositories/role.repository';
 import { PERMISSION_REPOSITORY } from './domain/repositories/permission.repository';
 import { PASSWORD_HASHER } from './domain/services/password-hasher.port';
@@ -19,6 +21,7 @@ import { TOKEN_SERVICE } from './domain/services/token-service.port';
 import { MERCHANT_PORT } from './domain/services/merchant.port';
 import { UserRepositoryImpl } from './infrastructure/persistence/repositories/user.repository.impl';
 import { PlatformUserRepositoryImpl } from './infrastructure/persistence/repositories/platform-user.repository.impl';
+import { PlatformRoleRepositoryImpl } from './infrastructure/persistence/repositories/platform-role.repository.impl';
 import { RoleRepositoryImpl } from './infrastructure/persistence/repositories/role.repository.impl';
 import { PermissionRepositoryImpl } from './infrastructure/persistence/repositories/permission.repository.impl';
 import { BcryptPasswordHasher } from './infrastructure/external-services/bcrypt-password-hasher';
@@ -37,19 +40,30 @@ import { UpdateRoleHandler } from './application/commands/update-role.handler';
 import { DeleteRoleHandler } from './application/commands/delete-role.handler';
 import { PutRolePermissionsHandler } from './application/commands/put-role-permissions.handler';
 import { CreatePlatformUserHandler } from './application/commands/create-platform-user.handler';
+import { UpdatePlatformUserHandler } from './application/commands/update-platform-user.handler';
+import { DeletePlatformUserHandler } from './application/commands/delete-platform-user.handler';
 import { ChangePlatformUserRoleHandler } from './application/commands/change-platform-user-role.handler';
 import { DeactivatePlatformUserHandler } from './application/commands/deactivate-platform-user.handler';
 import { PlatformLoginHandler } from './application/commands/platform-login.handler';
+import { CreatePlatformRoleHandler } from './application/commands/create-platform-role.handler';
+import { UpdatePlatformRoleHandler } from './application/commands/update-platform-role.handler';
+import { DeletePlatformRoleHandler } from './application/commands/delete-platform-role.handler';
 import { GetUserByIdHandler } from './application/queries/get-user-by-id.handler';
 import { ListUsersHandler } from './application/queries/list-users.handler';
 import { GetRoleHandler } from './application/queries/get-role.handler';
 import { ListRolesHandler } from './application/queries/list-roles.handler';
 import { ListPermissionsHandler } from './application/queries/list-permissions.handler';
+import { GetPlatformRoleHandler } from './application/queries/get-platform-role.handler';
+import { ListPlatformRolesHandler } from './application/queries/list-platform-roles.handler';
+import { GetPlatformUserHandler } from './application/queries/get-platform-user.handler';
+import { ListPlatformUsersHandler } from './application/queries/list-platform-users.handler';
 import { UserController } from './presentation/http/controllers/user.controller';
 import { AuthController } from './presentation/http/controllers/auth.controller';
 import { RoleController } from './presentation/http/controllers/role.controller';
 import { PermissionController } from './presentation/http/controllers/permission.controller';
 import { PlatformAuthController } from './presentation/http/controllers/platform-auth.controller';
+import { PlatformRoleController } from './presentation/http/controllers/platform-role.controller';
+import { PlatformUserController } from './presentation/http/controllers/platform-user.controller';
 
 const CommandHandlers = [
   CreateUserHandler,
@@ -62,9 +76,14 @@ const CommandHandlers = [
   DeleteRoleHandler,
   PutRolePermissionsHandler,
   CreatePlatformUserHandler,
+  UpdatePlatformUserHandler,
+  DeletePlatformUserHandler,
   ChangePlatformUserRoleHandler,
   DeactivatePlatformUserHandler,
   PlatformLoginHandler,
+  CreatePlatformRoleHandler,
+  UpdatePlatformRoleHandler,
+  DeletePlatformRoleHandler,
 ];
 const QueryHandlers = [
   GetUserByIdHandler,
@@ -72,6 +91,10 @@ const QueryHandlers = [
   GetRoleHandler,
   ListRolesHandler,
   ListPermissionsHandler,
+  GetPlatformRoleHandler,
+  ListPlatformRolesHandler,
+  GetPlatformUserHandler,
+  ListPlatformUsersHandler,
 ];
 
 @Module({
@@ -83,6 +106,7 @@ const QueryHandlers = [
       RolePermissionOrmEntity,
       PermissionOrmEntity,
       PlatformUserOrmEntity,
+      PlatformRoleOrmEntity,
     ]),
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.register({
@@ -96,10 +120,13 @@ const QueryHandlers = [
     RoleController,
     PermissionController,
     PlatformAuthController,
+    PlatformRoleController,
+    PlatformUserController,
   ],
   providers: [
     { provide: USER_REPOSITORY, useClass: UserRepositoryImpl },
     { provide: PLATFORM_USER_REPOSITORY, useClass: PlatformUserRepositoryImpl },
+    { provide: PLATFORM_ROLE_REPOSITORY, useClass: PlatformRoleRepositoryImpl },
     { provide: ROLE_REPOSITORY, useClass: RoleRepositoryImpl },
     { provide: PERMISSION_REPOSITORY, useClass: PermissionRepositoryImpl },
     { provide: PASSWORD_HASHER, useClass: BcryptPasswordHasher },
@@ -114,6 +141,7 @@ const QueryHandlers = [
   exports: [
     USER_REPOSITORY,
     PLATFORM_USER_REPOSITORY,
+    PLATFORM_ROLE_REPOSITORY,
     ROLE_REPOSITORY,
     PERMISSION_REPOSITORY,
     PASSWORD_HASHER,
