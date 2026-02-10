@@ -26,7 +26,7 @@ import { UpdatePlatformRoleDto } from '../../../application/dto/update-platform-
 import { PaginationQuery, type PaginationQueryParams } from '@shared/application/pagination';
 import { JwtAuthGuard } from '../../../infrastructure/external-services/jwt-auth.guard';
 import { RolesGuard } from '../../../infrastructure/external-services/roles.guard';
-import { Roles } from '../../../application/decorators/roles.decorator';
+import { Permissions } from '../../../application/decorators/permissions.decorator';
 
 @ApiTags('Platform Roles')
 @Controller('platform/roles')
@@ -39,7 +39,7 @@ export class PlatformRoleController {
   ) {}
 
   @Post()
-  @Roles('SUPER_ADMIN')
+  @Permissions('platform_role.create')
   @ApiOperation({ summary: 'Create platform role' })
   @ApiResponse({ status: 201 })
   @ApiResponse({ status: 409, description: 'Role name already exists' })
@@ -54,7 +54,7 @@ export class PlatformRoleController {
   }
 
   @Get()
-  @Roles('SUPER_ADMIN', 'SUPPORT', 'FINANCE')
+  @Permissions('platform_role.list')
   @ApiOperation({ summary: 'List platform roles' })
   async list(@PaginationQuery() pagination: PaginationQueryParams) {
     return this.queryBus.execute(
@@ -63,7 +63,7 @@ export class PlatformRoleController {
   }
 
   @Get(':id')
-  @Roles('SUPER_ADMIN', 'SUPPORT', 'FINANCE')
+  @Permissions('platform_role.read')
   @ApiOperation({ summary: 'Get platform role by id' })
   @ApiParam({ name: 'id' })
   @ApiResponse({ status: 200 })
@@ -73,7 +73,7 @@ export class PlatformRoleController {
   }
 
   @Patch(':id')
-  @Roles('SUPER_ADMIN')
+  @Permissions('platform_role.update')
   @ApiOperation({ summary: 'Update platform role' })
   @ApiParam({ name: 'id' })
   @ApiResponse({ status: 200 })
@@ -86,7 +86,7 @@ export class PlatformRoleController {
   }
 
   @Delete(':id')
-  @Roles('SUPER_ADMIN')
+  @Permissions('platform_role.delete')
   @ApiOperation({ summary: 'Delete platform role' })
   @ApiParam({ name: 'id' })
   @ApiResponse({ status: 200 })

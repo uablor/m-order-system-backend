@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEmail, IsIn, IsNotEmpty, IsString, MinLength } from 'class-validator';
-import { PLATFORM_ROLES } from '../../domain/value-objects/platform-role.vo';
+import { PLATFORM_ROLES, type PlatformRole } from '../../domain/value-objects/platform-role.vo';
 
 export class CreatePlatformUserDto {
   @ApiProperty({ example: 'admin@platform.com' })
@@ -20,5 +20,5 @@ export class CreatePlatformUserDto {
 
   @ApiProperty({ example: 'SUPER_ADMIN', enum: PLATFORM_ROLES })
   @IsIn(PLATFORM_ROLES)
-  role!: 'SUPER_ADMIN' | 'SUPPORT' | 'FINANCE';
+  role!: PlatformRole;
 }

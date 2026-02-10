@@ -26,7 +26,7 @@ import { UpdatePlatformUserDto } from '../../../application/dto/update-platform-
 import { PaginationQuery, type PaginationQueryParams } from '@shared/application/pagination';
 import { JwtAuthGuard } from '../../../infrastructure/external-services/jwt-auth.guard';
 import { RolesGuard } from '../../../infrastructure/external-services/roles.guard';
-import { Roles } from '../../../application/decorators/roles.decorator';
+import { Permissions } from '../../../application/decorators/permissions.decorator';
 
 @ApiTags('Platform Users')
 @Controller('platform/users')
@@ -39,7 +39,7 @@ export class PlatformUserController {
   ) {}
 
   @Post()
-  @Roles('SUPER_ADMIN')
+  @Permissions('platform_user.create')
   @ApiOperation({ summary: 'Create platform user' })
   @ApiResponse({ status: 201 })
   @ApiResponse({ status: 409, description: 'Email already exists' })
@@ -57,7 +57,7 @@ export class PlatformUserController {
   }
 
   @Get()
-  @Roles('SUPER_ADMIN', 'SUPPORT', 'FINANCE')
+  @Permissions('platform_user.list')
   @ApiOperation({ summary: 'List platform users' })
   async list(@PaginationQuery() pagination: PaginationQueryParams) {
     return this.queryBus.execute(
@@ -66,7 +66,7 @@ export class PlatformUserController {
   }
 
   @Get(':id')
-  @Roles('SUPER_ADMIN', 'SUPPORT', 'FINANCE')
+  @Permissions('platform_user.read')
   @ApiOperation({ summary: 'Get platform user by id' })
   @ApiParam({ name: 'id' })
   @ApiResponse({ status: 200 })
@@ -76,7 +76,7 @@ export class PlatformUserController {
   }
 
   @Patch(':id')
-  @Roles('SUPER_ADMIN')
+  @Permissions('platform_user.update')
   @ApiOperation({ summary: 'Update platform user' })
   @ApiParam({ name: 'id' })
   @ApiResponse({ status: 200 })
@@ -92,7 +92,7 @@ export class PlatformUserController {
   }
 
   @Delete(':id')
-  @Roles('SUPER_ADMIN')
+  @Permissions('platform_user.delete')
   @ApiOperation({ summary: 'Delete platform user' })
   @ApiParam({ name: 'id' })
   @ApiResponse({ status: 200 })

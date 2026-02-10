@@ -1,6 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsBoolean, IsIn, IsOptional, IsString, MinLength } from 'class-validator';
-import { PLATFORM_ROLES } from '../../domain/value-objects/platform-role.vo';
+import { PLATFORM_ROLES, type PlatformRole } from '../../domain/value-objects/platform-role.vo';
 
 export class UpdatePlatformUserDto {
   @ApiPropertyOptional({ example: 'Platform Admin' })
@@ -11,7 +11,7 @@ export class UpdatePlatformUserDto {
   @ApiPropertyOptional({ example: 'SUPPORT', enum: PLATFORM_ROLES })
   @IsOptional()
   @IsIn(PLATFORM_ROLES)
-  role?: 'SUPER_ADMIN' | 'SUPPORT' | 'FINANCE';
+  role?: PlatformRole;
 
   @ApiPropertyOptional({ example: true })
   @IsOptional()

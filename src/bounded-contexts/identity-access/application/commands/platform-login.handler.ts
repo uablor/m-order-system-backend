@@ -6,6 +6,10 @@ import {
   type IPlatformUserRepository,
 } from '../../domain/repositories/platform-user.repository';
 import {
+  PLATFORM_ROLE_PERMISSION_REPOSITORY,
+  type IPlatformRolePermissionRepository,
+} from '../../domain/repositories/platform-role-permission.repository';
+import {
   PASSWORD_HASHER,
   type IPasswordHasher,
 } from '../../domain/services/password-hasher.port';
@@ -32,6 +36,8 @@ export class PlatformLoginHandler
   constructor(
     @Inject(PLATFORM_USER_REPOSITORY)
     private readonly userRepo: IPlatformUserRepository,
+    @Inject(PLATFORM_ROLE_PERMISSION_REPOSITORY)
+    private readonly rolePermissionRepo: IPlatformRolePermissionRepository,
     @Inject(PASSWORD_HASHER)
     private readonly hasher: IPasswordHasher,
     @Inject(TOKEN_SERVICE)
@@ -48,10 +54,14 @@ export class PlatformLoginHandler
     const valid = await this.hasher.compare(command.password, user.passwordHash);
     if (!valid) throw new UnauthorizedException('Invalid credentials');
 
+    const permissions = await this.rolePermissionRepo.getPermissionCodesByPlatformRoleName(
+      user.role,
+    );
     const payload: TokenPayload = {
       sub: typeof user.id === 'string' ? user.id : user.id.value,
       email: user.email.value,
       role: user.role,
+      permissions,
       isPlatform: true,
     };
     const accessToken = await this.tokenService.sign(payload);

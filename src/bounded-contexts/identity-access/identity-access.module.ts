@@ -10,10 +10,12 @@ import {
   PermissionOrmEntity,
   PlatformUserOrmEntity,
   PlatformRoleOrmEntity,
+  PlatformRolePermissionOrmEntity,
 } from './infrastructure/persistence/entities';
 import { USER_REPOSITORY } from './domain/repositories/user.repository';
 import { PLATFORM_USER_REPOSITORY } from './domain/repositories/platform-user.repository';
 import { PLATFORM_ROLE_REPOSITORY } from './domain/repositories/platform-role.repository';
+import { PLATFORM_ROLE_PERMISSION_REPOSITORY } from './domain/repositories/platform-role-permission.repository';
 import { ROLE_REPOSITORY } from './domain/repositories/role.repository';
 import { PERMISSION_REPOSITORY } from './domain/repositories/permission.repository';
 import { PASSWORD_HASHER } from './domain/services/password-hasher.port';
@@ -22,6 +24,7 @@ import { MERCHANT_PORT } from './domain/services/merchant.port';
 import { UserRepositoryImpl } from './infrastructure/persistence/repositories/user.repository.impl';
 import { PlatformUserRepositoryImpl } from './infrastructure/persistence/repositories/platform-user.repository.impl';
 import { PlatformRoleRepositoryImpl } from './infrastructure/persistence/repositories/platform-role.repository.impl';
+import { PlatformRolePermissionRepositoryImpl } from './infrastructure/persistence/repositories/platform-role-permission.repository.impl';
 import { RoleRepositoryImpl } from './infrastructure/persistence/repositories/role.repository.impl';
 import { PermissionRepositoryImpl } from './infrastructure/persistence/repositories/permission.repository.impl';
 import { BcryptPasswordHasher } from './infrastructure/external-services/bcrypt-password-hasher';
@@ -107,6 +110,7 @@ const QueryHandlers = [
       PermissionOrmEntity,
       PlatformUserOrmEntity,
       PlatformRoleOrmEntity,
+      PlatformRolePermissionOrmEntity,
     ]),
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.register({
@@ -127,6 +131,10 @@ const QueryHandlers = [
     { provide: USER_REPOSITORY, useClass: UserRepositoryImpl },
     { provide: PLATFORM_USER_REPOSITORY, useClass: PlatformUserRepositoryImpl },
     { provide: PLATFORM_ROLE_REPOSITORY, useClass: PlatformRoleRepositoryImpl },
+    {
+      provide: PLATFORM_ROLE_PERMISSION_REPOSITORY,
+      useClass: PlatformRolePermissionRepositoryImpl,
+    },
     { provide: ROLE_REPOSITORY, useClass: RoleRepositoryImpl },
     { provide: PERMISSION_REPOSITORY, useClass: PermissionRepositoryImpl },
     { provide: PASSWORD_HASHER, useClass: BcryptPasswordHasher },
@@ -142,6 +150,7 @@ const QueryHandlers = [
     USER_REPOSITORY,
     PLATFORM_USER_REPOSITORY,
     PLATFORM_ROLE_REPOSITORY,
+    PLATFORM_ROLE_PERMISSION_REPOSITORY,
     ROLE_REPOSITORY,
     PERMISSION_REPOSITORY,
     PASSWORD_HASHER,

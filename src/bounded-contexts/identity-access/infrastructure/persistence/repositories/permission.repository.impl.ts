@@ -4,7 +4,10 @@ import { Repository } from 'typeorm';
 import type { IPermissionRepository } from '../../../domain/repositories/permission.repository';
 import type { PermissionAggregate } from '../../../domain/aggregates/permission.aggregate';
 import { PermissionOrmEntity } from '../entities/permission.orm-entity';
-import { permissionOrmToDomain } from '../mappers/permission.mapper';
+import {
+  permissionOrmToDomain,
+  permissionDomainToOrm,
+} from '../mappers/permission.mapper';
 
 @Injectable()
 export class PermissionRepositoryImpl implements IPermissionRepository {
@@ -12,6 +15,12 @@ export class PermissionRepositoryImpl implements IPermissionRepository {
     @InjectRepository(PermissionOrmEntity)
     private readonly repo: Repository<PermissionOrmEntity>,
   ) {}
+
+  async save(permission: PermissionAggregate): Promise<PermissionAggregate> {
+    const orm = this.repo.create(permissionDomainToOrm(permission));
+    await this.repo.save(orm);
+    return permission;
+  }
 
   async findById(id: string): Promise<PermissionAggregate | null> {
     const orm = await this.repo.findOne({ where: { id } });
