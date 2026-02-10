@@ -18,7 +18,7 @@ export class RoleRepositoryImpl implements IRoleRepository {
 
   async save(role: RoleAggregate): Promise<RoleAggregate> {
     const orm = this.roleRepo.create(roleDomainToOrm(role) as Partial<RoleOrmEntity>);
-    orm.id = role.id.value;
+
     const saved = await this.roleRepo.save(orm);
     await this.rpRepo.delete({ role_id: role.id.value });
     for (const pid of role.permissionIds) {

@@ -37,7 +37,7 @@ export const seed008PlatformSuperadmin: Seed = {
       role: 'SUPER_ADMIN',
       isActive: true,
     });
-
+    console.log("user", user);
     await repo.save(user);
   },
 };

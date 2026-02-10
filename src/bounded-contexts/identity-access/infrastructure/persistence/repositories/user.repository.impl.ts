@@ -18,14 +18,14 @@ export class UserRepositoryImpl implements IUserRepository {
   ) {}
 
   async save(user: UserAggregate): Promise<UserAggregate> {
-    const orm = this.repo.create(userDomainToOrm(user) as Partial<UserOrmEntity>);
-    orm.id = user.id.value;
+    const orm = this.repo.create(userDomainToOrm(user));
+    
     const saved = await this.repo.save(orm);
     return userOrmToDomain(saved);
   }
 
   async findById(id: string): Promise<UserAggregate | null> {
-    const orm = await this.repo.findOne({ where: { id } });
+    const orm = await this.repo.findOne({ where: { domain_id: id } });
     return orm ? userOrmToDomain(orm) : null;
   }
 
@@ -40,7 +40,7 @@ export class UserRepositoryImpl implements IUserRepository {
     params: UserRepositoryFindManyParams,
   ): Promise<{ data: UserAggregate[]; total: number }> {
     const result = await paginateEntity(this.repo, { page: params.page, limit: params.limit }, {
-      where: { merchant_id: params.merchantId } as object,
+      where: { merchant_id: params.merchantId ?? undefined } as object,
       order: { created_at: 'DESC' } as { created_at: 'DESC' },
     });
     return {

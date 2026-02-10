@@ -16,11 +16,13 @@ import { CreateNotificationDto } from '../../../application/dto/create-notificat
 import { PaginationQuery, type PaginationQueryParams } from '@shared/application/pagination';
 import { JwtAuthGuard } from 'src/bounded-contexts/identity-access/infrastructure/external-services/jwt-auth.guard';
 import { RolesGuard } from 'src/bounded-contexts/identity-access/infrastructure/external-services/roles.guard';
-import { Roles } from 'src/bounded-contexts/identity-access/application/decorators/roles.decorator';
+import { Permissions } from 'src/bounded-contexts/identity-access/application/decorators/permissions.decorator';
+import { AutoPermissions } from 'src/bounded-contexts/identity-access/application/decorators/auto-permissions.decorator';
 
 @ApiTags('Notifications')
 @Controller('notifications')
 @UseGuards(JwtAuthGuard, RolesGuard)
+@AutoPermissions({ resource: 'notification' })
 @ApiBearerAuth('BearerAuth')
 export class NotificationController {
   constructor(
@@ -29,7 +31,7 @@ export class NotificationController {
   ) {}
 
   @Post()
-  @Roles('OWNER', 'STAFF', 'ADMIN', 'SUPERADMIN')
+  @Permissions('notification.create')
   @ApiOperation({ summary: 'Create notification (event-driven record)' })
   @ApiResponse({ status: 201 })
   async create(@Body() dto: CreateNotificationDto) {
@@ -49,6 +51,7 @@ export class NotificationController {
   }
 
   @Get()
+  @Permissions('notification.list')
   @ApiOperation({ summary: 'List notifications' })
   @ApiQuery({ name: 'merchantId', required: true })
   @ApiQuery({ name: 'customerId', required: false })
@@ -76,6 +79,7 @@ export class NotificationController {
   }
 
   @Get(':id')
+  @Permissions('notification.read')
   @ApiOperation({ summary: 'Get notification by id' })
   @ApiParam({ name: 'id' })
   @ApiResponse({ status: 200 })
@@ -85,7 +89,7 @@ export class NotificationController {
   }
 
   @Post(':id/retry')
-  @Roles('OWNER', 'STAFF', 'ADMIN', 'SUPERADMIN')
+  @Permissions('notification.retry')
   @ApiOperation({ summary: 'Retry notification (max retry limit applies)' })
   @ApiParam({ name: 'id' })
   @ApiResponse({ status: 200 })

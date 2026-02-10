@@ -26,11 +26,13 @@ import { AddArrivalItemDto } from '../../../application/dto/add-arrival-item.dto
 import { PaginationQuery, type PaginationQueryParams } from '@shared/application/pagination';
 import { JwtAuthGuard } from 'src/bounded-contexts/identity-access/infrastructure/external-services/jwt-auth.guard';
 import { RolesGuard } from 'src/bounded-contexts/identity-access/infrastructure/external-services/roles.guard';
-import { Roles } from 'src/bounded-contexts/identity-access/application/decorators/roles.decorator';
+import { Permissions } from 'src/bounded-contexts/identity-access/application/decorators/permissions.decorator';
+import { AutoPermissions } from 'src/bounded-contexts/identity-access/application/decorators/auto-permissions.decorator';
 
 @ApiTags('Arrivals')
 @Controller('arrivals')
 @UseGuards(JwtAuthGuard, RolesGuard)
+@AutoPermissions({ resource: 'arrival' })
 @ApiBearerAuth('BearerAuth')
 export class ArrivalController {
   constructor(
@@ -39,7 +41,7 @@ export class ArrivalController {
   ) {}
 
   @Post()
-  @Roles('OWNER', 'STAFF', 'ADMIN', 'SUPERADMIN')
+  @Permissions('arrival.create')
   @ApiOperation({ summary: 'Create arrival record' })
   @ApiResponse({ status: 201 })
   async create(@Body() dto: CreateArrivalDto) {
@@ -57,6 +59,7 @@ export class ArrivalController {
   }
 
   @Get()
+  @Permissions('arrival.list')
   @ApiOperation({ summary: 'List arrivals' })
   @ApiQuery({ name: 'merchantId', required: true })
   @ApiQuery({ name: 'orderId', required: false })
@@ -73,6 +76,7 @@ export class ArrivalController {
   }
 
   @Get(':id')
+  @Permissions('arrival.read')
   @ApiOperation({ summary: 'Get arrival by id' })
   @ApiParam({ name: 'id' })
   @ApiResponse({ status: 200 })
@@ -82,7 +86,7 @@ export class ArrivalController {
   }
 
   @Post(':id/items')
-  @Roles('OWNER', 'STAFF', 'ADMIN', 'SUPERADMIN')
+  @Permissions('arrival.add_items')
   @ApiOperation({ summary: 'Add arrival item (cannot exceed ordered quantity)' })
   @ApiParam({ name: 'id' })
   @ApiResponse({ status: 201 })
@@ -100,7 +104,7 @@ export class ArrivalController {
   }
 
   @Post(':id/confirm')
-  @Roles('OWNER', 'STAFF', 'ADMIN', 'SUPERADMIN')
+  @Permissions('arrival.confirm')
   @ApiOperation({ summary: 'Confirm arrival (updates order arrival status)' })
   @ApiParam({ name: 'id' })
   @ApiResponse({ status: 200 })

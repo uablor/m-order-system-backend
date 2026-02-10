@@ -108,23 +108,23 @@ export const seed007PlatformPermissions: Seed = {
       }
     }
 
-    const superAdminRole = await roleRepo.findOne({
-      where: { name: 'SUPER_ADMIN' },
-    });
-    if (!superAdminRole) {
-      throw new Error('SUPER_ADMIN platform role not found. Run 006-platform-roles first.');
-    }
-
+    const platformRoleNames = ['SUPER_ADMIN', 'PLATFORM_ADMIN', 'SUPPORT'];
     const allPermissions = await permRepo.find({ select: ['id'] });
-    await linkRepo.delete({ platform_role_id: superAdminRole.id });
-    if (allPermissions.length > 0) {
-      const links = allPermissions.map((perm) =>
-        linkRepo.create({
-          platform_role_id: superAdminRole.id,
-          permission_id: perm.id,
-        }),
-      );
-      await linkRepo.save(links);
+
+    for (const roleName of platformRoleNames) {
+      const role = await roleRepo.findOne({ where: { name: roleName } });
+      if (!role) continue;
+
+      await linkRepo.delete({ platform_role_id: role.id });
+      if (allPermissions.length > 0) {
+        const links = allPermissions.map((perm) =>
+          linkRepo.create({
+            platform_role_id: role.id,
+            permission_id: perm.id,
+          }),
+        );
+        await linkRepo.save(links);
+      }
     }
   },
 };

@@ -15,6 +15,7 @@ export class ListUsersHandler implements IQueryHandler<ListUsersQuery> {
   ) {}
 
   async execute(query: ListUsersQuery) {
+ ;
     const { data, total } = await this.userRepo.findMany({
       merchantId: query.merchantId,
       page: query.page,

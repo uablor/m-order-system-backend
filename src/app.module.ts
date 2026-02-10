@@ -15,6 +15,7 @@ import { OrderManagementModule } from './bounded-contexts/order-management/order
 import { CustomerInteractionModule } from './bounded-contexts/customer-interaction/customer-interaction.module';
 import { JwtAuthGuard } from './bounded-contexts/identity-access/infrastructure/external-services/jwt-auth.guard';
 import { RolesGuard } from './bounded-contexts/identity-access/infrastructure/external-services/roles.guard';
+import { AutoPermissionsGuard } from './bounded-contexts/identity-access/infrastructure/external-services/permissions.guard';
 import { ThrottlerGuard } from '@nestjs/throttler';
 
 @Module({
@@ -49,6 +50,7 @@ import { ThrottlerGuard } from '@nestjs/throttler';
     { provide: APP_GUARD, useClass: ThrottlerGuard },
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: APP_GUARD, useClass: RolesGuard },
+    { provide: APP_GUARD, useClass: AutoPermissionsGuard },
   ],
 })
 export class AppModule implements NestModule {

@@ -31,17 +31,16 @@ export class RolesGuard implements CanActivate {
       [context.getHandler(), context.getClass()],
     );
     if (requiredPermissions?.length) {
-      if (user.isPlatform && user.permissions?.length) {
-        const hasOne = requiredPermissions.some((p) =>
-          user.permissions!.includes(p),
-        );
-        if (!hasOne)
-          throw new ForbiddenException('Insufficient permissions');
-        return true;
+      if (!user.permissions?.length) {
+        throw new ForbiddenException('No permissions found.');
       }
-      if (user.isPlatform)
+      const hasOne = requiredPermissions.some((p) =>
+        user.permissions!.includes(p),
+      );
+      if (!hasOne) {
         throw new ForbiddenException('Insufficient permissions');
-      throw new ForbiddenException('Permission-based route requires platform user');
+      }
+      return true;
     }
 
     const requiredRoles = this.reflector.getAllAndOverride<string[]>(

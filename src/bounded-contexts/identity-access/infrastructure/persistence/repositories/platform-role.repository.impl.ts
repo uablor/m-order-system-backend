@@ -22,7 +22,7 @@ export class PlatformRoleRepositoryImpl implements IPlatformRoleRepository {
   async save(role: PlatformRoleAggregate): Promise<PlatformRoleAggregate> {
     const domainId = typeof role.id === 'string' ? role.id : role.id.value;
     const orm = this.repo.create(platformRoleDomainToOrm(role) as Partial<PlatformRoleOrmEntity>);
-    orm.id = domainId;
+  
     orm.domain_id = domainId;
     await this.repo.save(orm);
     return role;

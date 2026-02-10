@@ -10,6 +10,10 @@ import {
 } from '../../../../../../bounded-contexts/identity-access/infrastructure/persistence/entities';
 import { MerchantOrmEntity } from '../../../../../../bounded-contexts/merchant-management/infrastructure/persistence/entities';
 import { Seed } from '../types';
+import { userDomainToOrm } from 'src/bounded-contexts/identity-access/infrastructure/persistence/mappers/user.mapper';
+import { UniqueEntityId } from '@shared/domain';
+import { Email } from 'src/bounded-contexts/identity-access/domain/value-objects';
+import { UserAggregate } from 'src/bounded-contexts/identity-access/domain/aggregates/user.aggregate';
 
 const SUPERADMIN_EMAIL = 'superadmin@gmail.com';
 const SUPERADMIN_PASSWORD = 'superadmin';
@@ -38,25 +42,15 @@ export const seed005SuperadminUser: Seed = {
     const passwordHash = await bcrypt.hash(SUPERADMIN_PASSWORD, BCRYPT_ROUNDS);
     const userDomainId = uuid();
     await userRepo.save(
-      userRepo.create({
-        id: userDomainId,
-        domain_id: userDomainId,
+      userRepo.create(userDomainToOrm(UserAggregate.create({
+        id: UniqueEntityId.create(userDomainId),
         email: SUPERADMIN_EMAIL,
-        password_hash: passwordHash,
-        full_name: SUPERADMIN_FULL_NAME,
-        merchant_id: merchant.id,
-        role_id: adminRole.id,
-        is_active: true,
-      }),
+        passwordHash,
+        fullName: SUPERADMIN_FULL_NAME,
+        merchantId: merchant.id,
+        roleId: adminRole.id,
+        isActive: true,
+      }))),
     );
-
-    // Link merchant owner to this user (update after insert to avoid circular dep)
-    const created = await userRepo.findOne({ where: { email: SUPERADMIN_EMAIL } });
-    if (created) {
-      await merchantRepo.update(
-        { id: merchant.id },
-        { owner_user_id: created.id },
-      );
-    }
   },
 };

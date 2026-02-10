@@ -40,7 +40,7 @@ export class CustomerRepositoryImpl implements ICustomerRepository {
     params: CustomerRepositoryFindManyParams,
   ): Promise<{ data: CustomerAggregate[]; total: number }> {
     const result = await paginateEntity(this.repo, { page: params.page, limit: params.limit }, {
-      where: { merchant_id: params.merchantId } as object,
+      where: { merchant_id: params.merchantId ?? undefined } as object,
       order: { created_at: 'DESC' } as { created_at: 'DESC' },
     });
     return { data: result.data.map(customerOrmToDomain), total: result.total };

@@ -29,11 +29,13 @@ import { UpdateExchangeRateDto } from '../../../application/dto/update-exchange-
 import { PaginationQuery, type PaginationQueryParams } from '@shared/application/pagination';
 import { JwtAuthGuard } from 'src/bounded-contexts/identity-access/infrastructure/external-services/jwt-auth.guard';
 import { RolesGuard } from 'src/bounded-contexts/identity-access/infrastructure/external-services/roles.guard';
-import { Roles } from 'src/bounded-contexts/identity-access/application/decorators/roles.decorator';
+import { Permissions } from 'src/bounded-contexts/identity-access/application/decorators/permissions.decorator';
+import { AutoPermissions } from 'src/bounded-contexts/identity-access/application/decorators/auto-permissions.decorator';
 
 @ApiTags('Exchange Rates')
 @Controller('exchange-rates')
 @UseGuards(JwtAuthGuard, RolesGuard)
+@AutoPermissions({ resource: 'exchange_rate' })
 @ApiBearerAuth('BearerAuth')
 export class ExchangeRateController {
   constructor(
@@ -42,7 +44,7 @@ export class ExchangeRateController {
   ) {}
 
   @Post()
-  @Roles('OWNER', 'STAFF', 'ADMIN', 'SUPERADMIN')
+  @Permissions('exchange_rate.create')
   @ApiOperation({ summary: 'Create exchange rate (unique per merchant + date + currency + type)' })
   @ApiResponse({ status: 201, description: 'Created' })
   @ApiResponse({ status: 409, description: 'Rate already exists for this combination' })
@@ -63,6 +65,7 @@ export class ExchangeRateController {
   }
 
   @Get()
+  @Permissions('exchange_rate.list')
   @ApiOperation({ summary: 'List exchange rates' })
   @ApiQuery({ name: 'merchantId', required: true })
   @ApiQuery({ name: 'page', required: false })
@@ -81,6 +84,7 @@ export class ExchangeRateController {
   }
 
   @Get('by-date')
+  @Permissions('exchange_rate.read')
   @ApiOperation({ summary: 'Get exchange rates by date' })
   @ApiQuery({ name: 'merchantId', required: true })
   @ApiQuery({ name: 'rateDate', required: true, example: '2025-02-05' })
@@ -92,6 +96,7 @@ export class ExchangeRateController {
   }
 
   @Get(':id')
+  @Permissions('exchange_rate.read')
   @ApiOperation({ summary: 'Get exchange rate by id' })
   @ApiParam({ name: 'id' })
   @ApiResponse({ status: 200 })
@@ -101,7 +106,7 @@ export class ExchangeRateController {
   }
 
   @Patch(':id')
-  @Roles('OWNER', 'STAFF', 'ADMIN', 'SUPERADMIN')
+  @Permissions('exchange_rate.update')
   @ApiOperation({ summary: 'Update exchange rate' })
   @ApiParam({ name: 'id' })
   @ApiResponse({ status: 200 })
@@ -115,7 +120,7 @@ export class ExchangeRateController {
   }
 
   @Delete(':id')
-  @Roles('OWNER', 'STAFF', 'ADMIN', 'SUPERADMIN')
+  @Permissions('exchange_rate.delete')
   @ApiOperation({ summary: 'Delete exchange rate' })
   @ApiParam({ name: 'id' })
   @ApiResponse({ status: 200 })

@@ -32,6 +32,10 @@ import { JwtServiceImpl } from './infrastructure/external-services/jwt.service.i
 import { JwtStrategy } from './infrastructure/external-services/jwt.strategy';
 import { JwtAuthGuard } from './infrastructure/external-services/jwt-auth.guard';
 import { RolesGuard } from './infrastructure/external-services/roles.guard';
+import {
+  PermissionsGuard,
+  AutoPermissionsGuard,
+} from './infrastructure/external-services/permissions.guard';
 import { MerchantPortStubAdapter } from './infrastructure/external-services/merchant-port-stub.adapter';
 import { CreateUserHandler } from './application/commands/create-user.handler';
 import { UpdateUserHandler } from './application/commands/update-user.handler';
@@ -143,6 +147,8 @@ const QueryHandlers = [
     JwtStrategy,
     JwtAuthGuard,
     RolesGuard,
+    PermissionsGuard,
+    AutoPermissionsGuard,
     ...CommandHandlers,
     ...QueryHandlers,
   ],
@@ -158,6 +164,8 @@ const QueryHandlers = [
     JwtModule,
     JwtAuthGuard,
     RolesGuard,
+    PermissionsGuard,
+    AutoPermissionsGuard,
   ],
 })
 export class IdentityAccessModule {}

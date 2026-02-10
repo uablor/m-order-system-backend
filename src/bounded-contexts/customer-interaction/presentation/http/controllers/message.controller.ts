@@ -25,11 +25,13 @@ import { CreateMessageDto } from '../../../application/dto/create-message.dto';
 import { PaginationQuery, type PaginationQueryParams } from '@shared/application/pagination';
 import { JwtAuthGuard } from 'src/bounded-contexts/identity-access/infrastructure/external-services/jwt-auth.guard';
 import { RolesGuard } from 'src/bounded-contexts/identity-access/infrastructure/external-services/roles.guard';
-import { Roles } from 'src/bounded-contexts/identity-access/application/decorators/roles.decorator';
+import { Permissions } from 'src/bounded-contexts/identity-access/application/decorators/permissions.decorator';
+import { AutoPermissions } from 'src/bounded-contexts/identity-access/application/decorators/auto-permissions.decorator';
 
 @ApiTags('Customer Messages')
 @Controller('messages')
 @UseGuards(JwtAuthGuard, RolesGuard)
+@AutoPermissions({ resource: 'message' })
 @ApiBearerAuth('BearerAuth')
 export class MessageController {
   constructor(
@@ -38,7 +40,7 @@ export class MessageController {
   ) {}
 
   @Post()
-  @Roles('OWNER', 'STAFF', 'ADMIN', 'SUPERADMIN')
+  @Permissions('message.create')
   @ApiOperation({ summary: 'Create customer message (must belong to merchant + customer)' })
   @ApiResponse({ status: 201 })
   async create(@Body() dto: CreateMessageDto) {
@@ -56,6 +58,7 @@ export class MessageController {
   }
 
   @Get()
+  @Permissions('message.list')
   @ApiOperation({ summary: 'List customer messages' })
   @ApiQuery({ name: 'merchantId', required: true })
   @ApiQuery({ name: 'customerId', required: false })
@@ -80,6 +83,7 @@ export class MessageController {
   }
 
   @Get(':id')
+  @Permissions('message.read')
   @ApiOperation({ summary: 'Get message by id' })
   @ApiParam({ name: 'id' })
   @ApiResponse({ status: 200 })
@@ -89,7 +93,7 @@ export class MessageController {
   }
 
   @Patch(':id/read')
-  @Roles('OWNER', 'STAFF', 'ADMIN', 'SUPERADMIN')
+  @Permissions('message.update')
   @ApiOperation({ summary: 'Mark message as read' })
   @ApiParam({ name: 'id' })
   @ApiResponse({ status: 200 })

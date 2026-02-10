@@ -26,11 +26,12 @@ import { UpdatePlatformRoleDto } from '../../../application/dto/update-platform-
 import { PaginationQuery, type PaginationQueryParams } from '@shared/application/pagination';
 import { JwtAuthGuard } from '../../../infrastructure/external-services/jwt-auth.guard';
 import { RolesGuard } from '../../../infrastructure/external-services/roles.guard';
-import { Permissions } from '../../../application/decorators/permissions.decorator';
+import { AutoPermissions } from '../../../application/decorators/auto-permissions.decorator';
 
 @ApiTags('Platform Roles')
 @Controller('platform/roles')
 @UseGuards(JwtAuthGuard, RolesGuard)
+@AutoPermissions({ resource: 'platform_role' })
 @ApiBearerAuth('BearerAuth')
 export class PlatformRoleController {
   constructor(
@@ -39,7 +40,6 @@ export class PlatformRoleController {
   ) {}
 
   @Post()
-  @Permissions('platform_role.create')
   @ApiOperation({ summary: 'Create platform role' })
   @ApiResponse({ status: 201 })
   @ApiResponse({ status: 409, description: 'Role name already exists' })
@@ -54,7 +54,6 @@ export class PlatformRoleController {
   }
 
   @Get()
-  @Permissions('platform_role.list')
   @ApiOperation({ summary: 'List platform roles' })
   async list(@PaginationQuery() pagination: PaginationQueryParams) {
     return this.queryBus.execute(
@@ -63,7 +62,6 @@ export class PlatformRoleController {
   }
 
   @Get(':id')
-  @Permissions('platform_role.read')
   @ApiOperation({ summary: 'Get platform role by id' })
   @ApiParam({ name: 'id' })
   @ApiResponse({ status: 200 })
@@ -73,7 +71,6 @@ export class PlatformRoleController {
   }
 
   @Patch(':id')
-  @Permissions('platform_role.update')
   @ApiOperation({ summary: 'Update platform role' })
   @ApiParam({ name: 'id' })
   @ApiResponse({ status: 200 })
@@ -86,7 +83,6 @@ export class PlatformRoleController {
   }
 
   @Delete(':id')
-  @Permissions('platform_role.delete')
   @ApiOperation({ summary: 'Delete platform role' })
   @ApiParam({ name: 'id' })
   @ApiResponse({ status: 200 })

@@ -28,11 +28,13 @@ import { UpdatePaymentDto } from '../../../application/dto/update-payment.dto';
 import { PaginationQuery, type PaginationQueryParams } from '@shared/application/pagination';
 import { JwtAuthGuard } from 'src/bounded-contexts/identity-access/infrastructure/external-services/jwt-auth.guard';
 import { RolesGuard } from 'src/bounded-contexts/identity-access/infrastructure/external-services/roles.guard';
-import { Roles } from 'src/bounded-contexts/identity-access/application/decorators/roles.decorator';
+import { Permissions } from 'src/bounded-contexts/identity-access/application/decorators/permissions.decorator';
+import { AutoPermissions } from 'src/bounded-contexts/identity-access/application/decorators/auto-permissions.decorator';
 
 @ApiTags('Payments')
 @Controller('payments')
 @UseGuards(JwtAuthGuard, RolesGuard)
+@AutoPermissions({ resource: 'payment' })
 @ApiBearerAuth('BearerAuth')
 export class PaymentController {
   constructor(
@@ -41,7 +43,7 @@ export class PaymentController {
   ) {}
 
   @Post()
-  @Roles('OWNER', 'STAFF', 'ADMIN', 'SUPERADMIN')
+  @Permissions('payment.create')
   @ApiOperation({ summary: 'Create payment (PENDING)' })
   @ApiResponse({ status: 201 })
   async create(@Body() dto: CreatePaymentDto) {
@@ -62,6 +64,7 @@ export class PaymentController {
   }
 
   @Get()
+  @Permissions('payment.list')
   @ApiOperation({ summary: 'List payments' })
   @ApiQuery({ name: 'merchantId', required: true })
   @ApiQuery({ name: 'orderId', required: false })
@@ -89,6 +92,7 @@ export class PaymentController {
   }
 
   @Get(':id')
+  @Permissions('payment.read')
   @ApiOperation({ summary: 'Get payment by id' })
   @ApiParam({ name: 'id' })
   @ApiResponse({ status: 200 })
@@ -98,7 +102,7 @@ export class PaymentController {
   }
 
   @Patch(':id')
-  @Roles('OWNER', 'STAFF', 'ADMIN', 'SUPERADMIN')
+  @Permissions('payment.update')
   @ApiOperation({ summary: 'Update payment (e.g. notes)' })
   @ApiParam({ name: 'id' })
   @ApiResponse({ status: 200 })
@@ -110,7 +114,7 @@ export class PaymentController {
   }
 
   @Post(':id/verify')
-  @Roles('OWNER', 'STAFF', 'ADMIN', 'SUPERADMIN')
+  @Permissions('payment.verify')
   @ApiOperation({ summary: 'Verify payment (updates customer order balance)' })
   @ApiParam({ name: 'id' })
   @ApiQuery({ name: 'verifiedBy', required: true })
@@ -122,7 +126,7 @@ export class PaymentController {
   }
 
   @Post(':id/reject')
-  @Roles('OWNER', 'STAFF', 'ADMIN', 'SUPERADMIN')
+  @Permissions('payment.reject')
   @ApiOperation({ summary: 'Reject payment (cannot reject verified)' })
   @ApiParam({ name: 'id' })
   @ApiQuery({ name: 'rejectedBy', required: true })

@@ -29,11 +29,13 @@ import { UpdateRoleDto } from '../../../application/dto/update-role.dto';
 import { PutRolePermissionsDto } from '../../../application/dto/put-role-permissions.dto';
 import { JwtAuthGuard } from '../../../infrastructure/external-services/jwt-auth.guard';
 import { RolesGuard } from '../../../infrastructure/external-services/roles.guard';
-import { Roles } from '../../../application/decorators/roles.decorator';
+import { Permissions } from '../../../application/decorators/permissions.decorator';
+import { AutoPermissions } from '../../../application/decorators/auto-permissions.decorator';
 
 @ApiTags('Roles')
 @Controller('roles')
 @UseGuards(JwtAuthGuard, RolesGuard)
+@AutoPermissions({ resource: 'role' })
 @ApiBearerAuth('BearerAuth')
 export class RoleController {
   constructor(
@@ -42,7 +44,7 @@ export class RoleController {
   ) {}
 
   @Post()
-  @Roles('OWNER', 'SUPERADMIN')
+  @Permissions('role.create')
   @ApiOperation({ summary: 'Create role' })
   @ApiResponse({ status: 201 })
   async create(@Body() dto: CreateRoleDto) {
@@ -53,6 +55,7 @@ export class RoleController {
   }
 
   @Get()
+  @Permissions('role.list')
   @ApiOperation({ summary: 'List roles' })
   @ApiQuery({ name: 'merchantId', required: false })
   async list(@Query('merchantId') merchantId?: string) {
@@ -60,6 +63,7 @@ export class RoleController {
   }
 
   @Get(':id')
+  @Permissions('role.read')
   @ApiOperation({ summary: 'Get role by id' })
   @ApiResponse({ status: 200 })
   @ApiResponse({ status: 404 })
@@ -68,7 +72,7 @@ export class RoleController {
   }
 
   @Patch(':id')
-  @Roles('OWNER', 'SUPERADMIN')
+  @Permissions('role.update')
   @ApiOperation({ summary: 'Update role' })
   @ApiResponse({ status: 200 })
   async update(@Param('id') id: string, @Body() dto: UpdateRoleDto) {
@@ -81,7 +85,7 @@ export class RoleController {
   }
 
   @Put(':id/permissions')
-  @Roles('OWNER', 'SUPERADMIN')
+  @Permissions('role.put_permissions')
   @ApiOperation({ summary: 'Replace role permissions' })
   @ApiResponse({ status: 200 })
   async putPermissions(@Param('id') id: string, @Body() dto: PutRolePermissionsDto) {
@@ -90,7 +94,7 @@ export class RoleController {
   }
 
   @Delete(':id')
-  @Roles('OWNER', 'SUPERADMIN')
+  @Permissions('role.delete')
   @ApiOperation({ summary: 'Delete role' })
   @ApiResponse({ status: 200 })
   async delete(@Param('id') id: string) {

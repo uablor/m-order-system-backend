@@ -29,11 +29,13 @@ import { UpdateCustomerDto } from '../../../application/dto/update-customer.dto'
 import { PaginationQuery, type PaginationQueryParams } from '@shared/application/pagination';
 import { JwtAuthGuard } from 'src/bounded-contexts/identity-access/infrastructure/external-services/jwt-auth.guard';
 import { RolesGuard } from 'src/bounded-contexts/identity-access/infrastructure/external-services/roles.guard';
-import { Roles } from 'src/bounded-contexts/identity-access/application/decorators/roles.decorator';
+import { Permissions } from 'src/bounded-contexts/identity-access/application/decorators/permissions.decorator';
+import { AutoPermissions } from 'src/bounded-contexts/identity-access/application/decorators/auto-permissions.decorator';
 
 @ApiTags('Customers')
 @Controller('customers')
 @UseGuards(JwtAuthGuard, RolesGuard)
+@AutoPermissions({ resource: 'customer' })
 @ApiBearerAuth('BearerAuth')
 export class CustomerController {
   constructor(
@@ -42,7 +44,7 @@ export class CustomerController {
   ) {}
 
   @Post()
-  @Roles('OWNER', 'STAFF', 'ADMIN', 'SUPERADMIN')
+  @Permissions('customer.create')
   @ApiOperation({ summary: 'Create customer (generates unique token)' })
   @ApiResponse({ status: 201 })
   async create(@Body() dto: CreateCustomerDto) {
@@ -58,13 +60,15 @@ export class CustomerController {
   }
 
   @Get()
+  @Permissions('customer.list')
   @ApiOperation({ summary: 'List customers' })
-  @ApiQuery({ name: 'merchantId', required: true })
+  @ApiQuery({ name: 'merchantId', required: false })
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'limit', required: false })
   async list(
-    @Query('merchantId') merchantId: string,
+
     @PaginationQuery() pagination: PaginationQueryParams,
+    @Query('merchantId') merchantId?: string,
   ) {
     return this.queryBus.execute(
       new ListCustomersQuery(merchantId, pagination.page, pagination.limit),
@@ -72,6 +76,7 @@ export class CustomerController {
   }
 
   @Get('token/:token')
+  @Permissions('customer.read')
   @ApiOperation({ summary: 'Get customer by token' })
   @ApiParam({ name: 'token' })
   @ApiQuery({ name: 'merchantId', required: false })
@@ -85,6 +90,7 @@ export class CustomerController {
   }
 
   @Get(':id')
+  @Permissions('customer.read')
   @ApiOperation({ summary: 'Get customer by id' })
   @ApiResponse({ status: 200 })
   @ApiResponse({ status: 404 })
@@ -93,7 +99,7 @@ export class CustomerController {
   }
 
   @Patch(':id')
-  @Roles('OWNER', 'STAFF', 'ADMIN', 'SUPERADMIN')
+  @Permissions('customer.update')
   @ApiOperation({ summary: 'Update customer' })
   @ApiResponse({ status: 200 })
   async update(@Param('id') id: string, @Body() dto: UpdateCustomerDto) {
@@ -106,7 +112,7 @@ export class CustomerController {
   }
 
   @Delete(':id')
-  @Roles('OWNER', 'STAFF', 'ADMIN', 'SUPERADMIN')
+  @Permissions('customer.delete')
   @ApiOperation({ summary: 'Delete customer' })
   @ApiResponse({ status: 200 })
   async delete(@Param('id') id: string) {

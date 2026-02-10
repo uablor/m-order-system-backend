@@ -26,13 +26,15 @@ import { CreateMerchantDto } from '../../../application/dto/create-merchant.dto'
 import { UpdateMerchantDto } from '../../../application/dto/update-merchant.dto';
 
 import { PaginationQuery, type PaginationQueryParams } from '@shared/application/pagination';
-import { Roles } from 'src/bounded-contexts/identity-access/application/decorators/roles.decorator';
+import { Permissions } from 'src/bounded-contexts/identity-access/application/decorators/permissions.decorator';
+import { AutoPermissions } from 'src/bounded-contexts/identity-access/application/decorators/auto-permissions.decorator';
 import { RolesGuard } from 'src/bounded-contexts/identity-access/infrastructure/external-services/roles.guard';
 import { JwtAuthGuard } from 'src/bounded-contexts/identity-access/infrastructure/external-services/jwt-auth.guard';
 
 @ApiTags('Merchants')
 @Controller('merchants')
 @UseGuards(JwtAuthGuard, RolesGuard)
+@AutoPermissions({ resource: 'merchant' })
 @ApiBearerAuth('BearerAuth')
 export class MerchantController {
   constructor(
@@ -41,7 +43,7 @@ export class MerchantController {
   ) {}
 
   @Post()
-  @Roles('SUPERADMIN')
+  @Permissions('merchant.create')
   @ApiOperation({ summary: 'Create merchant (and owner user)' })
   @ApiResponse({ status: 201 })
   async create(@Body() dto: CreateMerchantDto) {
@@ -57,7 +59,7 @@ export class MerchantController {
   }
 
   @Get()
-  @Roles('SUPERADMIN')
+  @Permissions('merchant.list')
   @ApiOperation({ summary: 'List merchants' })
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'limit', required: false })
@@ -68,6 +70,7 @@ export class MerchantController {
   }
 
   @Get(':id')
+  @Permissions('merchant.read')
   @ApiOperation({ summary: 'Get merchant by id' })
   @ApiResponse({ status: 200 })
   @ApiResponse({ status: 404 })
@@ -76,7 +79,7 @@ export class MerchantController {
   }
 
   @Patch(':id')
-  @Roles('OWNER', 'SUPERADMIN')
+  @Permissions('merchant.update')
   @ApiOperation({ summary: 'Update merchant' })
   @ApiResponse({ status: 200 })
   async update(@Param('id') id: string, @Body() dto: UpdateMerchantDto) {
@@ -89,7 +92,7 @@ export class MerchantController {
   }
 
   @Delete(':id')
-  @Roles('SUPERADMIN')
+  @Permissions('merchant.delete')
   @ApiOperation({ summary: 'Delete merchant' })
   @ApiResponse({ status: 200 })
   async delete(@Param('id') id: string) {

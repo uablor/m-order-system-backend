@@ -28,11 +28,13 @@ import { AddCustomerOrderItemDto } from '../../../application/dto/add-customer-o
 import { PaginationQuery, type PaginationQueryParams } from '@shared/application/pagination';
 import { JwtAuthGuard } from 'src/bounded-contexts/identity-access/infrastructure/external-services/jwt-auth.guard';
 import { RolesGuard } from 'src/bounded-contexts/identity-access/infrastructure/external-services/roles.guard';
-import { Roles } from 'src/bounded-contexts/identity-access/application/decorators/roles.decorator';
+import { Permissions } from 'src/bounded-contexts/identity-access/application/decorators/permissions.decorator';
+import { AutoPermissions } from 'src/bounded-contexts/identity-access/application/decorators/auto-permissions.decorator';
 
 @ApiTags('Customer Orders')
 @Controller('customer-orders')
 @UseGuards(JwtAuthGuard, RolesGuard)
+@AutoPermissions({ resource: 'customer_order' })
 @ApiBearerAuth('BearerAuth')
 export class CustomerOrderController {
   constructor(
@@ -41,7 +43,7 @@ export class CustomerOrderController {
   ) {}
 
   @Post()
-  @Roles('OWNER', 'STAFF', 'ADMIN', 'SUPERADMIN')
+  @Permissions('customer_order.create')
   @ApiOperation({ summary: 'Create customer order (must belong to order)' })
   @ApiResponse({ status: 201 })
   async create(@Body() dto: CreateCustomerOrderDto) {
@@ -52,6 +54,7 @@ export class CustomerOrderController {
   }
 
   @Get()
+  @Permissions('customer_order.list')
   @ApiOperation({ summary: 'List customer orders' })
   @ApiQuery({ name: 'merchantId', required: true })
   @ApiQuery({ name: 'orderId', required: false })
@@ -76,6 +79,7 @@ export class CustomerOrderController {
   }
 
   @Get('drafts')
+  @Permissions('customer_order.list')
   @ApiOperation({ summary: 'List draft customer orders by customer' })
   @ApiQuery({ name: 'merchantId', required: true })
   @ApiQuery({ name: 'customerId', required: true })
@@ -97,6 +101,7 @@ export class CustomerOrderController {
   }
 
   @Get(':id')
+  @Permissions('customer_order.read')
   @ApiOperation({ summary: 'Get customer order by id' })
   @ApiParam({ name: 'id' })
   @ApiResponse({ status: 200 })
@@ -106,7 +111,7 @@ export class CustomerOrderController {
   }
 
   @Post(':id/items')
-  @Roles('OWNER', 'STAFF', 'ADMIN', 'SUPERADMIN')
+  @Permissions('customer_order.add_items')
   @ApiOperation({ summary: 'Add customer order item (allocate from order item)' })
   @ApiParam({ name: 'id' })
   @ApiResponse({ status: 201 })
@@ -124,7 +129,7 @@ export class CustomerOrderController {
   }
 
   @Delete(':id')
-  @Roles('OWNER', 'STAFF', 'ADMIN', 'SUPERADMIN')
+  @Permissions('customer_order.delete')
   @ApiOperation({ summary: 'Delete customer order' })
   @ApiParam({ name: 'id' })
   @ApiResponse({ status: 200 })

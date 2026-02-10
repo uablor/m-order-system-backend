@@ -36,11 +36,13 @@ import { UpdateOrderItemDto } from '../../../application/dto/update-order-item.d
 import { PaginationQuery, type PaginationQueryParams } from '@shared/application/pagination';
 import { JwtAuthGuard } from 'src/bounded-contexts/identity-access/infrastructure/external-services/jwt-auth.guard';
 import { RolesGuard } from 'src/bounded-contexts/identity-access/infrastructure/external-services/roles.guard';
-import { Roles } from 'src/bounded-contexts/identity-access/application/decorators/roles.decorator';
+import { Permissions } from 'src/bounded-contexts/identity-access/application/decorators/permissions.decorator';
+import { AutoPermissions } from 'src/bounded-contexts/identity-access/application/decorators/auto-permissions.decorator';
 
 @ApiTags('Orders')
 @Controller('orders')
 @UseGuards(JwtAuthGuard, RolesGuard)
+@AutoPermissions({ resource: 'order' })
 @ApiBearerAuth('BearerAuth')
 export class OrderController {
   constructor(
@@ -49,7 +51,7 @@ export class OrderController {
   ) {}
 
   @Post()
-  @Roles('OWNER', 'STAFF', 'ADMIN', 'SUPERADMIN')
+  @Permissions('order.create')
   @ApiOperation({ summary: 'Create order (import bill)' })
   @ApiResponse({ status: 201 })
   async create(@Body() dto: CreateOrderDto) {
@@ -60,6 +62,7 @@ export class OrderController {
   }
 
   @Get()
+  @Permissions('order.list')
   @ApiOperation({ summary: 'List orders' })
   @ApiQuery({ name: 'merchantId', required: true })
   @ApiQuery({ name: 'page', required: false })
@@ -78,6 +81,7 @@ export class OrderController {
   }
 
   @Get('drafts')
+  @Permissions('order.list')
   @ApiOperation({ summary: 'List draft orders by merchant' })
   @ApiQuery({ name: 'merchantId', required: true })
   @ApiQuery({ name: 'page', required: false })
@@ -92,6 +96,7 @@ export class OrderController {
   }
 
   @Get(':id')
+  @Permissions('order.read')
   @ApiOperation({ summary: 'Get order by id' })
   @ApiParam({ name: 'id' })
   @ApiQuery({ name: 'merchantId', required: false })
@@ -102,7 +107,7 @@ export class OrderController {
   }
 
   @Patch(':id')
-  @Roles('OWNER', 'STAFF', 'ADMIN', 'SUPERADMIN')
+  @Permissions('order.update')
   @ApiOperation({ summary: 'Update order' })
   @ApiParam({ name: 'id' })
   @ApiResponse({ status: 200 })
@@ -115,7 +120,7 @@ export class OrderController {
   }
 
   @Delete(':id')
-  @Roles('OWNER', 'STAFF', 'ADMIN', 'SUPERADMIN')
+  @Permissions('order.delete')
   @ApiOperation({ summary: 'Delete order' })
   @ApiParam({ name: 'id' })
   @ApiResponse({ status: 200 })
@@ -125,7 +130,7 @@ export class OrderController {
   }
 
   @Post(':id/items')
-  @Roles('OWNER', 'STAFF', 'ADMIN', 'SUPERADMIN')
+  @Permissions('order.add_items')
   @ApiOperation({ summary: 'Add order item' })
   @ApiParam({ name: 'id' })
   @ApiResponse({ status: 201 })
@@ -149,7 +154,7 @@ export class OrderController {
   }
 
   @Patch(':orderId/items/:itemId')
-  @Roles('OWNER', 'STAFF', 'ADMIN', 'SUPERADMIN')
+  @Permissions('order.update_items')
   @ApiOperation({ summary: 'Update order item' })
   @ApiParam({ name: 'orderId' })
   @ApiParam({ name: 'itemId', description: 'Item id' })
@@ -174,7 +179,7 @@ export class OrderController {
   }
 
   @Delete(':orderId/items/:itemId')
-  @Roles('OWNER', 'STAFF', 'ADMIN', 'SUPERADMIN')
+  @Permissions('order.update_items')
   @ApiOperation({ summary: 'Delete order item' })
   @ApiParam({ name: 'orderId' })
   @ApiParam({ name: 'itemId', description: 'Item id' })
@@ -185,7 +190,7 @@ export class OrderController {
   }
 
   @Post(':id/calculate')
-  @Roles('OWNER', 'STAFF', 'ADMIN', 'SUPERADMIN')
+  @Permissions('order.calculate')
   @ApiOperation({ summary: 'Recalculate order totals from items' })
   @ApiParam({ name: 'id' })
   @ApiResponse({ status: 200 })
@@ -195,7 +200,7 @@ export class OrderController {
   }
 
   @Post(':id/close')
-  @Roles('OWNER', 'STAFF', 'ADMIN', 'SUPERADMIN')
+  @Permissions('order.close')
   @ApiOperation({ summary: 'Close order' })
   @ApiParam({ name: 'id' })
   @ApiResponse({ status: 200 })

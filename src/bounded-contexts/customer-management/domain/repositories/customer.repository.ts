@@ -3,7 +3,7 @@ import type { CustomerAggregate } from '../aggregates/customer.aggregate';
 export const CUSTOMER_REPOSITORY = Symbol('CUSTOMER_REPOSITORY');
 
 export interface CustomerRepositoryFindManyParams {
-  merchantId: string;
+  merchantId?: string;
   page?: number;
   limit?: number;
 }

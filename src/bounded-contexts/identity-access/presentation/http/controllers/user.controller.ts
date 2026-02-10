@@ -26,12 +26,17 @@ import { CreateUserDto } from '../../../application/dto/create-user.dto';
 import { UpdateUserDto } from '../../../application/dto/update-user.dto';
 import { JwtAuthGuard } from '../../../infrastructure/external-services/jwt-auth.guard';
 import { RolesGuard } from '../../../infrastructure/external-services/roles.guard';
-import { Roles } from '../../../application/decorators/roles.decorator';
-import { PaginationQuery, type PaginationQueryParams } from '@shared/application/pagination';
+import { Permissions } from '../../../application/decorators/permissions.decorator';
+import { AutoPermissions } from '../../../application/decorators/auto-permissions.decorator';
+import {
+  PaginationQuery,
+  type PaginationQueryParams,
+} from '@shared/application/pagination';
 
 @ApiTags('Users')
 @Controller('users')
 @UseGuards(JwtAuthGuard, RolesGuard)
+@AutoPermissions({ resource: 'user' })
 @ApiBearerAuth('BearerAuth')
 export class UserController {
   constructor(
@@ -40,7 +45,7 @@ export class UserController {
   ) {}
 
   @Post()
-  @Roles('OWNER', 'SUPERADMIN')
+  @Permissions('user.create')
   @ApiOperation({ summary: 'Create user' })
   @ApiResponse({ status: 201 })
   @ApiResponse({ status: 400 })
@@ -58,13 +63,14 @@ export class UserController {
   }
 
   @Get()
+  @Permissions('user.list')
   @ApiOperation({ summary: 'List users' })
-  @ApiQuery({ name: 'merchantId', required: true })
+  @ApiQuery({ name: 'merchantId', required: false })
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'limit', required: false })
   async list(
-    @Query('merchantId') merchantId: string,
     @PaginationQuery() pagination: PaginationQueryParams,
+    @Query('merchantId') merchantId?: string,
   ) {
     return this.queryBus.execute(
       new ListUsersQuery(merchantId, pagination.page, pagination.limit),
@@ -72,6 +78,7 @@ export class UserController {
   }
 
   @Get(':id')
+  @Permissions('user.read')
   @ApiOperation({ summary: 'Get user by id' })
   @ApiResponse({ status: 200 })
   @ApiResponse({ status: 404 })
@@ -80,7 +87,7 @@ export class UserController {
   }
 
   @Patch(':id')
-  @Roles('OWNER', 'SUPERADMIN')
+  @Permissions('user.update')
   @ApiOperation({ summary: 'Update user' })
   @ApiResponse({ status: 200 })
   @ApiResponse({ status: 404 })
@@ -96,7 +103,7 @@ export class UserController {
   }
 
   @Delete(':id')
-  @Roles('OWNER', 'SUPERADMIN')
+  @Permissions('user.delete')
   @ApiOperation({ summary: 'Delete user' })
   @ApiResponse({ status: 200 })
   @ApiResponse({ status: 404 })
